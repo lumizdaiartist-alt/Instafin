@@ -1,0 +1,2116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Instafin — Core Banking System</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1a3353;--navy2:#22406b;--blue:#2563eb;--blue2:#3b82f6;
+  --teal:#0891b2;--green:#16a34a;--red:#dc2626;--orange:#ea580c;
+  --yellow:#ca8a04;--purple:#7c3aed;--gray:#64748b;--bg:#f1f5f9;
+  --white:#fff;--border:#e2e8f0;--text:#1e293b;--text2:#475569;
+  --sw:240px;--th:52px;--r:6px;
+  --sh:0 1px 3px rgba(0,0,0,.1);--sh2:0 4px 16px rgba(0,0,0,.12)
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13.5px;line-height:1.5}
+button{cursor:pointer;border:none;font-family:inherit;font-size:inherit}
+input,select,textarea{font-family:inherit;font-size:inherit}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:#f8fafc}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+.hidden{display:none!important}
+
+/* LOGIN */
+#loginWrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#0891b2 100%)}
+.lcard{background:#fff;border-radius:12px;width:400px;max-width:95vw;padding:40px 36px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.llogo{text-align:center;margin-bottom:24px}
+.llogo .wm{font-size:2rem;font-weight:800;color:var(--navy);letter-spacing:-1px}
+.llogo .wm span{color:var(--teal)}
+.llogo small{display:block;color:var(--gray);font-size:.72rem;letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.lf{margin-bottom:14px}
+.lf label{display:block;font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:4px}
+.lf input,.lf select{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:var(--r);font-size:.88rem;background:#f8fafc;transition:border .2s;outline:none}
+.lf input:focus,.lf select:focus{border-color:var(--teal);background:#fff}
+.lbtn{width:100%;padding:11px;background:var(--navy);color:#fff;border-radius:var(--r);font-weight:700;font-size:.95rem;margin-top:6px;transition:background .2s}
+.lbtn:hover{background:var(--navy2)}
+.lnote{text-align:center;font-size:.72rem;color:var(--gray);margin-top:14px}
+.mfa-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:var(--r);padding:12px;margin-bottom:14px;font-size:.8rem;color:#1e40af}
+
+/* APP */
+#app{display:none;min-height:100vh}
+
+/* TOPBAR */
+.topbar{position:fixed;top:0;left:0;right:0;height:var(--th);background:var(--navy);display:flex;align-items:center;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.tb-logo{width:var(--sw);padding:0 18px;flex-shrink:0;display:flex;align-items:center;border-right:1px solid rgba(255,255,255,.1)}
+.tb-logo .wm{font-size:1.35rem;font-weight:800;color:#fff;letter-spacing:-.5px}
+.tb-logo .wm span{color:var(--teal)}
+.tb-logo small{font-size:.58rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;display:block;line-height:1;margin-top:1px}
+.tb-center{flex:1;padding:0 16px;display:flex;align-items:center}
+.tb-search{display:flex;align-items:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:5px 10px;gap:7px;width:380px}
+.tb-search input{background:none;border:none;color:#fff;font-size:.82rem;width:100%;outline:none}
+.tb-search input::placeholder{color:rgba(255,255,255,.45)}
+.tb-right{display:flex;align-items:center;gap:6px;padding-right:16px;margin-left:auto}
+.tb-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.8);padding:5px 11px;border-radius:5px;font-size:.78rem;display:flex;align-items:center;gap:5px;transition:all .2s;cursor:pointer}
+.tb-btn:hover{background:rgba(255,255,255,.18);color:#fff}
+.tb-badge{background:var(--red);color:#fff;font-size:.6rem;padding:1px 5px;border-radius:10px;font-weight:700}
+.tb-user{display:flex;align-items:center;gap:8px;padding:4px 10px 4px 6px;background:rgba(255,255,255,.08);border-radius:5px;border:1px solid rgba(255,255,255,.1)}
+.tb-av{width:28px;height:28px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;color:#fff;flex-shrink:0}
+.tb-un{color:#fff;font-size:.78rem;font-weight:600}
+.tb-ur{color:rgba(255,255,255,.45);font-size:.65rem}
+
+/* SIDEBAR */
+.sidebar{position:fixed;top:var(--th);left:0;bottom:0;width:var(--sw);background:var(--white);border-right:1px solid var(--border);overflow-y:auto;z-index:100;padding-bottom:20px}
+.sb-sec{padding:14px 12px 4px;font-size:.62rem;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:1.5px}
+.sb-i{display:flex;align-items:center;gap:8px;padding:7px 14px;color:var(--text2);font-size:.8rem;cursor:pointer;transition:all .15s;border-left:3px solid transparent;user-select:none}
+.sb-i:hover{background:#f0f9ff;color:var(--blue);border-left-color:transparent}
+.sb-i.active{background:#eff6ff;color:var(--blue);font-weight:600;border-left-color:var(--blue)}
+.sb-i .ico{font-size:.9rem;width:18px;text-align:center;flex-shrink:0}
+.sb-i .cnt{background:var(--red);color:#fff;font-size:.58rem;padding:1px 5px;border-radius:10px;font-weight:700;margin-left:auto}
+.sb-div{height:1px;background:var(--border);margin:5px 12px}
+
+/* MAIN */
+.main{margin-left:var(--sw);margin-top:var(--th);min-height:calc(100vh - var(--th));padding:20px}
+
+/* PAGE */
+.page{display:none}
+.page.active{display:block}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.ph h1{font-size:1.2rem;font-weight:700;color:var(--navy)}
+.ph p{font-size:.78rem;color:var(--gray);margin-top:2px}
+.ph-r{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--r);font-size:.8rem;font-weight:600;transition:all .18s;cursor:pointer;border:none}
+.btn-sm{padding:5px 10px;font-size:.75rem}
+.btn-xs{padding:3px 8px;font-size:.72rem}
+.bp{background:var(--blue);color:#fff}.bp:hover{background:#1d4ed8}
+.bn{background:var(--navy);color:#fff}.bn:hover{background:var(--navy2)}
+.bt{background:var(--teal);color:#fff}.bt:hover{background:#0e7490}
+.bg{background:var(--green);color:#fff}.bg:hover{background:#15803d}
+.bd{background:var(--red);color:#fff}.bd:hover{background:#b91c1c}
+.bw{background:var(--orange);color:#fff}.bw:hover{background:#c2410c}
+.bo{background:#fff;border:1.5px solid var(--border);color:var(--text2)}.bo:hover{border-color:var(--blue);color:var(--blue)}
+.bgh{background:transparent;color:var(--gray)}.bgh:hover{background:var(--bg);color:var(--text)}
+.bpu{background:var(--purple);color:#fff}
+
+/* CARDS */
+.card{background:#fff;border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--sh);margin-bottom:16px}
+.ch{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.ct{font-size:.88rem;font-weight:700;color:var(--navy)}
+.cb{padding:16px}
+.cf{padding:10px 16px;border-top:1px solid var(--border);background:#fafafa;border-radius:0 0 var(--r) var(--r);display:flex;align-items:center;justify-content:space-between}
+
+/* STATS */
+.sr{display:grid;gap:12px;margin-bottom:16px}
+.s4{grid-template-columns:repeat(4,1fr)}
+.s3{grid-template-columns:repeat(3,1fr)}
+.s5{grid-template-columns:repeat(5,1fr)}
+.s6{grid-template-columns:repeat(6,1fr)}
+.sc{background:#fff;border-radius:var(--r);border:1px solid var(--border);padding:14px 16px;box-shadow:var(--sh)}
+.sc .sl{font-size:.7rem;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.sc .sv{font-size:1.6rem;font-weight:800;color:var(--navy);line-height:1}
+.sc .ss{font-size:.72rem;color:var(--gray);margin-top:4px}
+.sc .sc2{font-size:.72rem;margin-top:3px}
+.up{color:var(--green)}.dn{color:var(--red)}
+.bl{border-left:4px solid var(--blue)}.gg{border-left:4px solid var(--green)}
+.rr{border-left:4px solid var(--red)}.oo{border-left:4px solid var(--orange)}
+.tt{border-left:4px solid var(--teal)}.pp{border-left:4px solid var(--purple)}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+/* TABLE */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+thead th{background:#f8fafc;color:var(--gray);font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:9px 12px;border-bottom:2px solid var(--border);white-space:nowrap;text-align:left}
+tbody tr{border-bottom:1px solid #f1f5f9;transition:background .12s}
+tbody tr:hover{background:#f8fafc}
+tbody td{padding:9px 12px;color:var(--text);vertical-align:middle}
+tbody tr:last-child{border-bottom:none}
+
+/* BADGES */
+.b{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:600;white-space:nowrap}
+.bs{background:#dcfce7;color:#15803d}
+.br{background:#fee2e2;color:#b91c1c}
+.bw2{background:#fef3c7;color:#b45309}
+.bi{background:#dbeafe;color:#1d4ed8}
+.bpu2{background:#ede9fe;color:#6d28d9}
+.bgr{background:#f1f5f9;color:#475569}
+.bor{background:#ffedd5;color:#c2410c}
+.btl{background:#ccfbf1;color:#0f766e}
+
+/* FORMS */
+.fg{display:grid;gap:14px}
+.fg2{grid-template-columns:1fr 1fr}
+.fg3{grid-template-columns:1fr 1fr 1fr}
+.fd{display:flex;flex-direction:column;gap:4px}
+.fd label{font-size:.75rem;font-weight:600;color:var(--text)}
+.fd input,.fd select,.fd textarea{padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--r);font-size:.82rem;background:#fafafa;transition:all .2s;color:var(--text);outline:none}
+.fd input:focus,.fd select:focus,.fd textarea:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.fd textarea{resize:vertical;min-height:70px}
+.req{color:var(--red)}
+
+/* TABS */
+.tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:16px;overflow-x:auto}
+.tab{padding:8px 16px;font-size:.8rem;font-weight:600;color:var(--gray);cursor:pointer;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--blue)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* MODAL */
+.ov{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
+.md{background:#fff;border-radius:10px;width:640px;max-width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:mIn .18s ease}
+.md-lg{width:820px}
+.md-sm{width:420px}
+@keyframes mIn{from{opacity:0;transform:translateY(-12px) scale(.97)}to{opacity:1;transform:none}}
+.mh{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
+.mh h3{font-size:.95rem;font-weight:700;color:var(--navy)}
+.mc{background:none;color:var(--gray);font-size:1.3rem;line-height:1;padding:2px 6px;border-radius:4px}
+.mc:hover{background:var(--bg);color:var(--red)}
+.mb{padding:20px}
+.mf{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:#fafafa;border-radius:0 0 10px 10px}
+
+/* ALERTS */
+.al{padding:10px 14px;border-radius:var(--r);font-size:.8rem;display:flex;align-items:flex-start;gap:8px;margin-bottom:12px}
+.al-i{background:#eff6ff;color:#1d4ed8;border-left:3px solid #3b82f6}
+.al-s{background:#f0fdf4;color:#15803d;border-left:3px solid #22c55e}
+.al-w{background:#fffbeb;color:#b45309;border-left:3px solid #f59e0b}
+.al-d{background:#fef2f2;color:#b91c1c;border-left:3px solid #ef4444}
+
+/* PROGRESS */
+.pb{background:var(--border);border-radius:10px;height:6px;overflow:hidden}
+.pf{height:100%;border-radius:10px;transition:width .5s}
+
+/* TOGGLE */
+.tgw{display:flex;align-items:center;gap:10px}
+.tg{position:relative;width:38px;height:21px;flex-shrink:0}
+.tg input{opacity:0;width:0;height:0}
+.tgs{position:absolute;inset:0;background:#cbd5e1;border-radius:21px;cursor:pointer;transition:.25s}
+.tgs::before{content:'';position:absolute;height:15px;width:15px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s}
+.tg input:checked+.tgs{background:var(--green)}
+.tg input:checked+.tgs::before{transform:translateX(17px)}
+.tg-l{font-size:.82rem;color:var(--text)}
+
+/* TIMELINE */
+.tl{padding-left:20px;border-left:2px solid var(--border)}
+.tl-i{position:relative;margin-bottom:14px;padding-left:16px}
+.tl-d{position:absolute;left:-21px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--teal);border:2px solid #fff;box-shadow:0 0 0 2px var(--teal)}
+.tl-t{font-size:.8rem;font-weight:600;color:var(--navy)}
+.tl-x{font-size:.75rem;color:var(--gray);margin-top:1px}
+.tl-s{font-size:.68rem;color:var(--gray);margin-top:2px}
+
+/* WORKFLOW */
+.wfc{background:#f8fafc;border:2px dashed var(--border);border-radius:8px;padding:20px;min-height:140px;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.wfn{background:#fff;border:2px solid var(--blue);border-radius:8px;padding:9px 14px;font-size:.75rem;font-weight:600;color:var(--blue);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px}
+.wfn:hover{background:var(--blue);color:#fff}
+.wfn.wfs{border-color:var(--green);color:var(--green)}.wfn.wfs:hover{background:var(--green);color:#fff}
+.wfn.wfe{border-color:var(--red);color:var(--red)}.wfn.wfe:hover{background:var(--red);color:#fff}
+.wfa{color:var(--gray);font-size:1rem}
+
+/* TOAST */
+#toasts{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--navy);color:#fff;padding:10px 16px;border-radius:8px;font-size:.8rem;font-weight:500;box-shadow:var(--sh2);display:flex;align-items:center;gap:8px;max-width:320px;animation:tIn .25s ease;pointer-events:auto}
+.tst{border-left:3px solid var(--green)}.te{border-left:3px solid var(--red)}.ti{border-left:3px solid var(--teal)}.tw2{border-left:3px solid var(--orange)}
+@keyframes tIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+
+/* INFO PAIRS */
+.ip{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ipi{background:#f8fafc;border-radius:5px;padding:9px 12px}
+.ipi .il{font-size:.67rem;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.4px}
+.ipi .iv{font-size:.85rem;font-weight:600;color:var(--text);margin-top:2px}
+
+/* BAR CHART */
+.bc{display:flex;align-items:flex-end;gap:4px;height:100px}
+.bcc{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.bcf{width:100%;border-radius:3px 3px 0 0;min-height:4px;transition:height .4s}
+.bcl{font-size:.6rem;color:var(--gray);white-space:nowrap}
+.bcv{font-size:.62rem;color:var(--text2);font-weight:600}
+
+/* FIELD MAP */
+.fmap{background:#e0f2fe;border-radius:var(--r);height:200px;display:flex;align-items:center;justify-content:center;color:var(--teal);font-size:.85rem;border:1px solid #bae6fd;position:relative;overflow:hidden}
+.fpin{position:absolute;font-size:1.4rem;cursor:pointer;transition:transform .2s}
+.fpin:hover{transform:scale(1.3)}
+
+/* CALC */
+.cr{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--r);padding:14px;margin-top:14px}
+.crr{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #d1fae5;font-size:.8rem}
+.crr:last-child{border-bottom:none;font-weight:700;font-size:.88rem;color:var(--green)}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .main{margin-left:0}
+  .s4,.s5,.s6{grid-template-columns:repeat(2,1fr)}
+  .g2,.g3{grid-template-columns:1fr}
+  .fg2,.fg3{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginWrap">
+  <div class="lcard">
+    <div class="llogo">
+      <div class="wm">Insta<span>fin</span></div>
+      <small>by Oradian · Core Banking System</small>
+    </div>
+    <div id="step1">
+      <div class="lf"><label>Institution Code</label><input id="l_inst" value="INSTAFIN-001"/></div>
+      <div class="lf"><label>Username / Email</label><input id="l_user" value="admin@instafin.com"/></div>
+      <div class="lf"><label>Password</label><input id="l_pass" type="password" value="password"/></div>
+      <div class="lf"><label>Role</label>
+        <select id="l_role">
+          <option>Administrator</option><option>Branch Manager</option><option>Loan Officer</option>
+          <option>Field Officer</option><option>Cashier / Teller</option><option>Accountant</option><option>Auditor</option>
+        </select>
+      </div>
+      <button class="lbtn" onclick="goMFA()">Continue →</button>
+    </div>
+    <div id="step2" class="hidden">
+      <div class="mfa-box">🔐 A 6-digit code has been sent to your registered phone/email.</div>
+      <div class="lf"><label>MFA Code</label><input id="l_mfa" maxlength="6" placeholder="Enter code" style="letter-spacing:6px;font-size:1.2rem;text-align:center"/></div>
+      <button class="lbtn" onclick="doLogin()">Verify & Sign In</button>
+    </div>
+    <div class="lnote">v4.3.1 · Offline-capable · AWS-hosted · © Oradian 2026</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-logo">
+    <div><div class="wm">Insta<span>fin</span></div><small>Core Banking</small></div>
+  </div>
+  <div class="tb-center">
+    <div class="tb-search">
+      <span style="opacity:.5">🔍</span>
+      <input placeholder="Search clients, loans, accounts…"/>
+    </div>
+  </div>
+  <div class="tb-right">
+    <button class="tb-btn" onclick="nav('notifications')">🔔 <span class="tb-badge" id="nBadge">4</span></button>
+    <button class="tb-btn" onclick="nav('messages')">✉️ <span class="tb-badge">2</span></button>
+    <button class="tb-btn" onclick="nav('help')">❓ Help</button>
+    <div class="tb-user">
+      <div class="tb-av" id="topAv">A</div>
+      <div><div class="tb-un" id="topName">Admin</div><div class="tb-ur" id="topRole">Administrator</div></div>
+    </div>
+    <button class="tb-btn" onclick="doLogout()" style="color:#fca5a5">⏻</button>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sb-sec">Overview</div>
+  <div class="sb-i" onclick="nav('dashboard',this)"><span class="ico">🏠</span>Dashboard</div>
+  <div class="sb-i" onclick="nav('my-tasks',this)"><span class="ico">✅</span>My Tasks<span class="cnt">7</span></div>
+
+  <div class="sb-sec">Clients</div>
+  <div class="sb-i" onclick="nav('clients',this)"><span class="ico">👤</span>All Clients</div>
+  <div class="sb-i" onclick="nav('client-new',this)"><span class="ico">➕</span>New Client</div>
+  <div class="sb-i" onclick="nav('groups',this)"><span class="ico">👥</span>Groups</div>
+  <div class="sb-i" onclick="nav('group-new',this)"><span class="ico">➕</span>New Group</div>
+  <div class="sb-i" onclick="nav('kyc',this)"><span class="ico">🪪</span>KYC / AML<span class="cnt">6</span></div>
+  <div class="sb-i" onclick="nav('blacklist',this)"><span class="ico">🚫</span>Blacklist</div>
+  <div class="sb-i" onclick="nav('client-import',this)"><span class="ico">📥</span>Import Clients</div>
+
+  <div class="sb-sec">Loans</div>
+  <div class="sb-i" onclick="nav('loan-apps',this)"><span class="ico">📋</span>Applications<span class="cnt">12</span></div>
+  <div class="sb-i" onclick="nav('loan-new',this)"><span class="ico">➕</span>New Application</div>
+  <div class="sb-i" onclick="nav('loan-accounts',this)"><span class="ico">💼</span>Loan Accounts</div>
+  <div class="sb-i" onclick="nav('loan-pending',this)"><span class="ico">⏳</span>Pending Approval<span class="cnt">5</span></div>
+  <div class="sb-i" onclick="nav('loan-disbursements',this)"><span class="ico">💸</span>Disbursements</div>
+  <div class="sb-i" onclick="nav('loan-repayments',this)"><span class="ico">💰</span>Repayments</div>
+  <div class="sb-i" onclick="nav('loan-schedule',this)"><span class="ico">📅</span>Repayment Schedules</div>
+  <div class="sb-i" onclick="nav('loan-restructure',this)"><span class="ico">🔄</span>Loan Restructuring</div>
+  <div class="sb-i" onclick="nav('loan-writeoff',this)"><span class="ico">✂️</span>Write-offs</div>
+  <div class="sb-i" onclick="nav('loan-products',this)"><span class="ico">🏷️</span>Loan Products</div>
+  <div class="sb-i" onclick="nav('loan-calc',this)"><span class="ico">🧮</span>Loan Calculator</div>
+
+  <div class="sb-sec">Collections</div>
+  <div class="sb-i" onclick="nav('collections',this)"><span class="ico">🎯</span>Collections Center<span class="cnt">5</span></div>
+  <div class="sb-i" onclick="nav('par-report',this)"><span class="ico">⚠️</span>PAR Report</div>
+  <div class="sb-i" onclick="nav('delinquency',this)"><span class="ico">🔴</span>Delinquency</div>
+  <div class="sb-i" onclick="nav('follow-up',this)"><span class="ico">📞</span>Follow-up Tasks</div>
+
+  <div class="sb-sec">Savings & Deposits</div>
+  <div class="sb-i" onclick="nav('savings',this)"><span class="ico">🏦</span>Savings Accounts</div>
+  <div class="sb-i" onclick="nav('savings-new',this)"><span class="ico">➕</span>New Savings Account</div>
+  <div class="sb-i" onclick="nav('savings-txn',this)"><span class="ico">↕️</span>Deposit / Withdrawal</div>
+  <div class="sb-i" onclick="nav('fixed-deposits',this)"><span class="ico">🔒</span>Fixed Deposits</div>
+  <div class="sb-i" onclick="nav('fd-new',this)"><span class="ico">➕</span>New Fixed Deposit</div>
+  <div class="sb-i" onclick="nav('fd-maturity',this)"><span class="ico">📆</span>FD Maturity Tracker</div>
+  <div class="sb-i" onclick="nav('savings-products',this)"><span class="ico">📦</span>Savings Products</div>
+
+  <div class="sb-sec">Teller & Cashier</div>
+  <div class="sb-i" onclick="nav('teller',this)"><span class="ico">🏧</span>Teller Dashboard</div>
+  <div class="sb-i" onclick="nav('cash-in',this)"><span class="ico">📥</span>Cash In</div>
+  <div class="sb-i" onclick="nav('cash-out',this)"><span class="ico">📤</span>Cash Out</div>
+  <div class="sb-i" onclick="nav('vault',this)"><span class="ico">🔐</span>Vault Management</div>
+  <div class="sb-i" onclick="nav('cash-transfer',this)"><span class="ico">🔀</span>Cash Transfers</div>
+  <div class="sb-i" onclick="nav('teller-cod',this)"><span class="ico">🔚</span>Close of Day</div>
+
+  <div class="sb-sec">Accounting</div>
+  <div class="sb-i" onclick="nav('gl',this)"><span class="ico">📊</span>Chart of Accounts</div>
+  <div class="sb-i" onclick="nav('journals',this)"><span class="ico">📓</span>Journal Entries</div>
+  <div class="sb-i" onclick="nav('trial-balance',this)"><span class="ico">⚖️</span>Trial Balance</div>
+  <div class="sb-i" onclick="nav('income-stmt',this)"><span class="ico">📈</span>Income Statement</div>
+  <div class="sb-i" onclick="nav('balance-sheet',this)"><span class="ico">🗂️</span>Balance Sheet</div>
+  <div class="sb-i" onclick="nav('cashflow',this)"><span class="ico">💹</span>Cash Flow Statement</div>
+  <div class="sb-i" onclick="nav('reconciliation',this)"><span class="ico">🔁</span>Reconciliation</div>
+  <div class="sb-i" onclick="nav('provisioning',this)"><span class="ico">📌</span>Provisioning</div>
+  <div class="sb-i" onclick="nav('fee-income',this)"><span class="ico">🧾</span>Fee Income</div>
+  <div class="sb-i" onclick="nav('interest-accrual',this)"><span class="ico">💱</span>Interest Accrual</div>
+
+  <div class="sb-sec">Branches</div>
+  <div class="sb-i" onclick="nav('branches',this)"><span class="ico">🏢</span>All Branches</div>
+  <div class="sb-i" onclick="nav('branch-perf',this)"><span class="ico">📉</span>Branch Performance</div>
+  <div class="sb-i" onclick="nav('branch-new',this)"><span class="ico">➕</span>New Branch</div>
+  <div class="sb-i" onclick="nav('inter-branch',this)"><span class="ico">🔗</span>Inter-branch Transfers</div>
+
+  <div class="sb-sec">Field Officers</div>
+  <div class="sb-i" onclick="nav('field-officers',this)"><span class="ico">🧑‍💼</span>Field Officers</div>
+  <div class="sb-i" onclick="nav('field-collections',this)"><span class="ico">📲</span>Field Collections</div>
+  <div class="sb-i" onclick="nav('offline-sync',this)"><span class="ico">🔄</span>Offline Sync Status</div>
+  <div class="sb-i" onclick="nav('field-map',this)"><span class="ico">🗺️</span>Field Map View</div>
+
+  <div class="sb-sec">Reports</div>
+  <div class="sb-i" onclick="nav('reports',this)"><span class="ico">📊</span>Reports Center</div>
+  <div class="sb-i" onclick="nav('rpt-portfolio',this)"><span class="ico">💼</span>Portfolio Report</div>
+  <div class="sb-i" onclick="nav('rpt-disbursement',this)"><span class="ico">💸</span>Disbursement Report</div>
+  <div class="sb-i" onclick="nav('rpt-repayment',this)"><span class="ico">💳</span>Repayment Report</div>
+  <div class="sb-i" onclick="nav('rpt-par',this)"><span class="ico">⚠️</span>PAR / Aging Report</div>
+  <div class="sb-i" onclick="nav('rpt-savings',this)"><span class="ico">🏦</span>Savings Report</div>
+  <div class="sb-i" onclick="nav('rpt-branch',this)"><span class="ico">🏢</span>Branch Report</div>
+  <div class="sb-i" onclick="nav('rpt-officer',this)"><span class="ico">🧑‍💼</span>Officer Report</div>
+  <div class="sb-i" onclick="nav('rpt-regulatory',this)"><span class="ico">🏛️</span>Regulatory Reports</div>
+  <div class="sb-i" onclick="nav('rpt-custom',this)"><span class="ico">🔧</span>Custom Reports</div>
+
+  <div class="sb-sec">Product Engine</div>
+  <div class="sb-i" onclick="nav('loan-products',this)"><span class="ico">🏷️</span>Loan Products</div>
+  <div class="sb-i" onclick="nav('savings-products',this)"><span class="ico">📦</span>Savings Products</div>
+  <div class="sb-i" onclick="nav('fee-configs',this)"><span class="ico">💲</span>Fees & Charges</div>
+  <div class="sb-i" onclick="nav('interest-rates',this)"><span class="ico">📐</span>Interest Rate Config</div>
+  <div class="sb-i" onclick="nav('penalty-config',this)"><span class="ico">🔴</span>Penalty Config</div>
+
+  <div class="sb-sec">Messaging</div>
+  <div class="sb-i" onclick="nav('messages',this)"><span class="ico">💬</span>Messages</div>
+  <div class="sb-i" onclick="nav('sms-templates',this)"><span class="ico">📱</span>SMS Templates</div>
+  <div class="sb-i" onclick="nav('sms-blast',this)"><span class="ico">📣</span>Bulk SMS</div>
+  <div class="sb-i" onclick="nav('notifications',this)"><span class="ico">🔔</span>Notifications<span class="cnt">4</span></div>
+  <div class="sb-i" onclick="nav('email-logs',this)"><span class="ico">📧</span>Email Logs</div>
+
+  <div class="sb-sec">Automation</div>
+  <div class="sb-i" onclick="nav('workflows',this)"><span class="ico">⚙️</span>Workflows</div>
+  <div class="sb-i" onclick="nav('custom-fields',this)"><span class="ico">🧩</span>Custom Fields</div>
+  <div class="sb-i" onclick="nav('automation-rules',this)"><span class="ico">🤖</span>Automation Rules</div>
+  <div class="sb-i" onclick="nav('api-integrations',this)"><span class="ico">🔌</span>API Integrations</div>
+  <div class="sb-i" onclick="nav('webhooks',this)"><span class="ico">🪝</span>Webhooks</div>
+
+  <div class="sb-sec">Administration</div>
+  <div class="sb-i" onclick="nav('users',this)"><span class="ico">👤</span>Users</div>
+  <div class="sb-i" onclick="nav('roles',this)"><span class="ico">🔑</span>Roles & Permissions</div>
+  <div class="sb-i" onclick="nav('security',this)"><span class="ico">🔒</span>Security & MFA</div>
+  <div class="sb-i" onclick="nav('audit-log',this)"><span class="ico">📜</span>Audit Log</div>
+  <div class="sb-i" onclick="nav('system-config',this)"><span class="ico">⚙️</span>System Config</div>
+  <div class="sb-i" onclick="nav('currencies',this)"><span class="ico">💱</span>Currencies</div>
+  <div class="sb-i" onclick="nav('holidays',this)"><span class="ico">📅</span>Holidays</div>
+  <div class="sb-i" onclick="nav('backup',this)"><span class="ico">💾</span>Backup & Restore</div>
+  <div class="sb-i" onclick="nav('help',this)"><span class="ico">❓</span>Help Center</div>
+  <div class="sb-i" onclick="nav('settings',this)"><span class="ico">🛠️</span>Settings</div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- ██ DASHBOARD ██ -->
+<div class="page active" id="p-dashboard">
+  <div class="ph"><div><h1>Dashboard</h1><p>Welcome back! Institution performance summary.</p></div>
+  <div class="ph-r">
+    <select style="padding:6px 10px;border:1.5px solid var(--border);border-radius:var(--r);font-size:.78rem"><option>All Branches</option><option>Lagos Main</option><option>Abuja Central</option></select>
+    <button class="btn btn-sm bo">📅 Mar 2026</button>
+    <button class="btn btn-sm bp" onclick="toast('Exported!','success')">⬇ Export</button>
+    <button class="btn btn-sm bn" onclick="openM('m-quick')">＋ Quick Action</button>
+  </div></div>
+  <div class="sr s6">
+    <div class="sc bl"><div class="sl">Total Clients</div><div class="sv">12,847</div><div class="sc2 up">↑ 8.3% this month</div></div>
+    <div class="sc gg"><div class="sl">Active Loans</div><div class="sv">8,234</div><div class="sc2 up">↑ 5.1%</div></div>
+    <div class="sc tt"><div class="sl">Loan Portfolio</div><div class="sv">$4.2M</div><div class="sc2 up">↑ 12.7%</div></div>
+    <div class="sc rr"><div class="sl">PAR &gt; 30</div><div class="sv">3.8%</div><div class="sc2 dn">↑ 0.4% risk</div></div>
+    <div class="sc oo"><div class="sl">Total Deposits</div><div class="sv">$1.9M</div><div class="sc2 up">↑ 9.2%</div></div>
+    <div class="sc pp"><div class="sl">Disbursed Today</div><div class="sv">$32K</div><div class="sc2 up">14 loans</div></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ch"><span class="ct">📈 Monthly Disbursements</span><button class="btn btn-sm bgh" onclick="nav('rpt-disbursement')">View All</button></div>
+    <div class="cb">
+      <div class="bc">
+        <div class="bcc"><div class="bcv">$28K</div><div class="bcf" style="height:55%;background:var(--blue2)"></div><div class="bcl">Aug</div></div>
+        <div class="bcc"><div class="bcv">$31K</div><div class="bcf" style="height:62%;background:var(--blue2)"></div><div class="bcl">Sep</div></div>
+        <div class="bcc"><div class="bcv">$27K</div><div class="bcf" style="height:54%;background:var(--blue2)"></div><div class="bcl">Oct</div></div>
+        <div class="bcc"><div class="bcv">$35K</div><div class="bcf" style="height:70%;background:var(--blue2)"></div><div class="bcl">Nov</div></div>
+        <div class="bcc"><div class="bcv">$40K</div><div class="bcf" style="height:80%;background:var(--blue2)"></div><div class="bcl">Dec</div></div>
+        <div class="bcc"><div class="bcv">$38K</div><div class="bcf" style="height:76%;background:var(--blue2)"></div><div class="bcl">Jan</div></div>
+        <div class="bcc"><div class="bcv">$41K</div><div class="bcf" style="height:82%;background:var(--blue2)"></div><div class="bcl">Feb</div></div>
+        <div class="bcc"><div class="bcv">$32K</div><div class="bcf" style="height:64%;background:var(--teal)"></div><div class="bcl">Mar</div></div>
+      </div>
+    </div></div>
+    <div class="card"><div class="ch"><span class="ct">⚡ Recent Activity</span></div>
+    <div class="cb">
+      <div class="tl">
+        <div class="tl-i"><div class="tl-d"></div><div class="tl-t">Loan Disbursed – LN-2891</div><div class="tl-x">$2,500 to Amara Diallo · Lagos Main</div><div class="tl-s">2 min ago</div></div>
+        <div class="tl-i"><div class="tl-d" style="background:var(--green)"></div><div class="tl-t">Repayment – LN-2744</div><div class="tl-x">$450 from Kofi Mensah</div><div class="tl-s">18 min ago</div></div>
+        <div class="tl-i"><div class="tl-d" style="background:var(--orange)"></div><div class="tl-t">New Client Onboarded</div><div class="tl-x">Fatima Hassan · KYC Pending</div><div class="tl-s">1 hr ago</div></div>
+        <div class="tl-i"><div class="tl-d" style="background:var(--red)"></div><div class="tl-t">Overdue Alert – LN-2651</div><div class="tl-x">62 days overdue · $4,200 · Ibrahim Sow</div><div class="tl-s">2 hr ago</div></div>
+        <div class="tl-i"><div class="tl-d" style="background:var(--purple)"></div><div class="tl-t">FD Matured – DEP-774</div><div class="tl-x">$5,000 · Chukwudi Eze</div><div class="tl-s">3 hr ago</div></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ch"><span class="ct">🚨 At-Risk Accounts</span><span class="b br">5 Critical</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>Client</th><th>Loan ID</th><th>Days Late</th><th>Amount</th><th>Risk</th></tr></thead>
+      <tbody>
+        <tr><td>Ibrahim Sow</td><td>LN-2651</td><td><strong style="color:var(--red)">62</strong></td><td>$4,200</td><td><span class="b br">Critical</span></td></tr>
+        <tr><td>Kofi Asante</td><td>LN-2145</td><td><strong style="color:var(--red)">45</strong></td><td>$3,200</td><td><span class="b br">High</span></td></tr>
+        <tr><td>Ngozi Adeyemi</td><td>LN-2287</td><td><strong style="color:var(--orange)">38</strong></td><td>$1,500</td><td><span class="b bw2">Medium</span></td></tr>
+        <tr><td>Samuel Otieno</td><td>LN-2400</td><td><strong style="color:var(--orange)">32</strong></td><td>$900</td><td><span class="b bw2">Medium</span></td></tr>
+        <tr><td>Marie Dupont</td><td>LN-2531</td><td>31</td><td>$2,100</td><td><span class="b bw2">Medium</span></td></tr>
+      </tbody>
+    </table></div></div>
+    <div class="card"><div class="ch"><span class="ct">📊 Portfolio Breakdown</span></div><div class="cb">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div><div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:3px"><span>SME Loans</span><span><strong>50%</strong> · $2.1M</span></div><div class="pb"><div class="pf" style="width:50%;background:var(--blue)"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:3px"><span>Personal</span><span><strong>20%</strong> · $840K</span></div><div class="pb"><div class="pf" style="width:20%;background:var(--teal)"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:3px"><span>Agricultural</span><span><strong>15%</strong> · $630K</span></div><div class="pb"><div class="pf" style="width:15%;background:var(--green)"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:3px"><span>Group Loans</span><span><strong>10%</strong> · $420K</span></div><div class="pb"><div class="pf" style="width:10%;background:var(--orange)"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:3px"><span>Other</span><span><strong>5%</strong> · $210K</span></div><div class="pb"><div class="pf" style="width:5%;background:var(--purple)"></div></div></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="card"><div class="ch"><span class="ct">🏢 Branch Performance</span><button class="btn btn-sm bp" onclick="nav('branch-perf')">Full Report</button></div>
+  <div class="tw"><table>
+    <thead><tr><th>Branch</th><th>Clients</th><th>Portfolio</th><th>PAR 30</th><th>Deposits</th><th>Officers</th><th>COD</th><th>Grade</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Lagos Main</strong></td><td>3,210</td><td>$1.1M</td><td><span style="color:var(--green)">2.1%</span></td><td>$520K</td><td>18</td><td><span class="b bs">Done</span></td><td><span class="b bs">Excellent</span></td></tr>
+      <tr><td><strong>Abuja Central</strong></td><td>2,840</td><td>$980K</td><td><span style="color:var(--orange)">4.2%</span></td><td>$410K</td><td>14</td><td><span class="b bs">Done</span></td><td><span class="b bw2">Good</span></td></tr>
+      <tr><td><strong>Accra North</strong></td><td>2,150</td><td>$740K</td><td><span style="color:var(--green)">1.9%</span></td><td>$290K</td><td>11</td><td><span class="b bw2">Pending</span></td><td><span class="b bs">Excellent</span></td></tr>
+      <tr><td><strong>Nairobi East</strong></td><td>1,980</td><td>$680K</td><td><span style="color:var(--red)">6.8%</span></td><td>$250K</td><td>10</td><td><span class="b bs">Done</span></td><td><span class="b br">At Risk</span></td></tr>
+      <tr><td><strong>Manila West</strong></td><td>2,667</td><td>$700K</td><td><span style="color:var(--orange)">3.5%</span></td><td>$430K</td><td>12</td><td><span class="b bw2">Pending</span></td><td><span class="b bw2">Good</span></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ MY TASKS ██ -->
+<div class="page" id="p-my-tasks">
+  <div class="ph"><div><h1>My Tasks</h1><p>Pending actions assigned to you.</p></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Task added','success')">＋ New Task</button></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Task</th><th>Client / Ref</th><th>Due</th><th>Priority</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>Verify KYC Documents</td><td>Ngozi Adeyemi</td><td>Mar 14</td><td><span class="b br">High</span></td><td><span class="b bw2">Pending</span></td><td><button class="btn btn-xs bp" onclick="nav('kyc')">Open</button></td></tr>
+      <tr><td>Loan Approval Review</td><td>APP-007</td><td>Mar 14</td><td><span class="b br">High</span></td><td><span class="b bi">In Progress</span></td><td><button class="btn btn-xs bp" onclick="nav('loan-pending')">Open</button></td></tr>
+      <tr><td>Follow-up Call</td><td>Ibrahim Sow – LN-2651</td><td>Mar 13</td><td><span class="b br">Critical</span></td><td><span class="b bw2">Pending</span></td><td><button class="btn btn-xs bw" onclick="toast('Calling…','info')">Call</button></td></tr>
+      <tr><td>Disburse Approved Loan</td><td>APP-003 – Kofi Mensah</td><td>Mar 13</td><td><span class="b bw2">Medium</span></td><td><span class="b bs">Ready</span></td><td><button class="btn btn-xs bg" onclick="toast('Disbursed!','success')">Disburse</button></td></tr>
+      <tr><td>Monthly PAR Report</td><td>All Branches</td><td>Mar 31</td><td><span class="b bgr">Low</span></td><td><span class="b bi">Upcoming</span></td><td><button class="btn btn-xs bo" onclick="nav('rpt-par')">Start</button></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ CLIENTS ██ -->
+<div class="page" id="p-clients">
+  <div class="ph"><div><h1>All Clients</h1><p>Manage all individual and group client profiles.</p></div>
+  <div class="ph-r"><button class="btn btn-sm bo">⬇ Export</button><button class="btn btn-sm bp" onclick="nav('client-new')">＋ New Client</button></div></div>
+  <div class="sr s4">
+    <div class="sc bl"><div class="sl">Total Clients</div><div class="sv">12,847</div></div>
+    <div class="sc gg"><div class="sl">Active</div><div class="sv">11,204</div></div>
+    <div class="sc oo"><div class="sl">KYC Pending</div><div class="sv">143</div></div>
+    <div class="sc rr"><div class="sl">Blacklisted</div><div class="sv">18</div></div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="ct">Client Directory</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input placeholder="Search name, ID, phone…" style="padding:5px 10px;border:1.5px solid var(--border);border-radius:var(--r);font-size:.78rem;width:200px;outline:none"/>
+        <select style="padding:5px 9px;border:1.5px solid var(--border);border-radius:var(--r);font-size:.78rem"><option>All Segments</option><option>Individual</option><option>Group</option><option>SME</option></select>
+        <select style="padding:5px 9px;border:1.5px solid var(--border);border-radius:var(--r);font-size:.78rem"><option>All Branches</option><option>Lagos Main</option><option>Accra North</option></select>
+      </div>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>Client ID</th><th>Full Name</th><th>Phone</th><th>Segment</th><th>Branch</th><th>Loans</th><th>Savings</th><th>KYC</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td>CLT-1001</td><td><strong>Amara Diallo</strong></td><td>+234-801-234-5678</td><td>Individual</td><td>Lagos Main</td><td>1</td><td>$1,240</td><td><span class="b bs">Verified</span></td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bp" onclick="openM('m-client')">View</button> <button class="btn btn-xs bo">Edit</button></td></tr>
+        <tr><td>CLT-1002</td><td><strong>Kofi Mensah</strong></td><td>+233-24-567-8901</td><td>Individual</td><td>Accra North</td><td>2</td><td>$320</td><td><span class="b bs">Verified</span></td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bp" onclick="openM('m-client')">View</button> <button class="btn btn-xs bo">Edit</button></td></tr>
+        <tr><td>CLT-1003</td><td><strong>Ngozi Adeyemi</strong></td><td>+234-805-678-9012</td><td>SME</td><td>Abuja Central</td><td>1</td><td>$4,100</td><td><span class="b bw2">Pending</span></td><td><span class="b bw2">Review</span></td><td><button class="btn btn-xs bp" onclick="openM('m-client')">View</button> <button class="btn btn-xs bo">KYC</button></td></tr>
+        <tr><td>CLT-1004</td><td><strong>Fatima Hassan</strong></td><td>+254-72-345-6789</td><td>Group</td><td>Nairobi East</td><td>1</td><td>$850</td><td><span class="b bs">Verified</span></td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bp" onclick="openM('m-client')">View</button> <button class="btn btn-xs bo">Edit</button></td></tr>
+        <tr><td>CLT-1005</td><td><strong>Ibrahim Sow</strong></td><td>+221-77-890-1234</td><td>Individual</td><td>Lagos Main</td><td>1</td><td>$180</td><td><span class="b bs">Verified</span></td><td><span class="b br">Delinquent</span></td><td><button class="btn btn-xs bp" onclick="openM('m-client')">View</button> <button class="btn btn-xs bd">Flag</button></td></tr>
+        <tr><td>CLT-1006</td><td><strong>Marie Nguyen</strong></td><td>+63-917-234-5678</td><td>Individual</td><td>Manila West</td><td>1</td><td>$2,800</td><td><span class="b bs">Verified</span></td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bp" onclick="openM('m-client')">View</button> <button class="btn btn-xs bo">Edit</button></td></tr>
+        <tr><td>CLT-1007</td><td><strong>Chukwudi Eze</strong></td><td>+234-803-456-7890</td><td>SME</td><td>Lagos Main</td><td>2</td><td>$9,500</td><td><span class="b bs">Verified</span></td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bp" onclick="openM('m-client')">View</button> <button class="btn btn-xs bo">Edit</button></td></tr>
+      </tbody>
+    </table></div>
+    <div class="cf"><span style="font-size:.75rem;color:var(--gray)">Showing 7 of 12,847 clients</span>
+      <div style="display:flex;gap:5px"><button class="btn btn-xs bo">← Prev</button><button class="btn btn-xs bp">1</button><button class="btn btn-xs bo">2</button><button class="btn btn-xs bo">3</button><button class="btn btn-xs bo">Next →</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ██ NEW CLIENT ██ -->
+<div class="page" id="p-client-new">
+  <div class="ph"><div><h1>New Client Registration</h1><p>Complete all required fields to register a new client.</p></div></div>
+  <div class="card"><div class="ch"><span class="ct">Personal Information</span></div><div class="cb">
+    <div class="fg fg3">
+      <div class="fd"><label>First Name <span class="req">*</span></label><input placeholder="First name"/></div>
+      <div class="fd"><label>Middle Name</label><input placeholder="Middle name"/></div>
+      <div class="fd"><label>Last Name <span class="req">*</span></label><input placeholder="Last name"/></div>
+      <div class="fd"><label>Date of Birth <span class="req">*</span></label><input type="date"/></div>
+      <div class="fd"><label>Gender</label><select><option>Male</option><option>Female</option><option>Other</option></select></div>
+      <div class="fd"><label>Marital Status</label><select><option>Single</option><option>Married</option><option>Divorced</option></select></div>
+      <div class="fd"><label>Phone <span class="req">*</span></label><input placeholder="+234…"/></div>
+      <div class="fd"><label>Alternate Phone</label><input placeholder="+234…"/></div>
+      <div class="fd"><label>Email</label><input type="email" placeholder="email@example.com"/></div>
+      <div class="fd"><label>ID Type <span class="req">*</span></label><select><option>National ID</option><option>Passport</option><option>Driver's License</option><option>Voter's Card</option><option>BVN</option></select></div>
+      <div class="fd"><label>ID Number <span class="req">*</span></label><input placeholder="ID number"/></div>
+      <div class="fd"><label>ID Expiry</label><input type="date"/></div>
+      <div class="fd"><label>Client Segment</label><select><option>Individual</option><option>Group Member</option><option>SME</option></select></div>
+      <div class="fd"><label>Branch <span class="req">*</span></label><select><option>Lagos Main</option><option>Abuja Central</option><option>Accra North</option><option>Nairobi East</option><option>Manila West</option></select></div>
+      <div class="fd"><label>Assigned Officer</label><select><option>James Osei</option><option>Aisha Bello</option><option>Chidi Obi</option></select></div>
+    </div>
+    <div class="fg fg2" style="margin-top:14px">
+      <div class="fd"><label>Home Address <span class="req">*</span></label><textarea placeholder="Full home address…"></textarea></div>
+      <div class="fd"><label>Business Address</label><textarea placeholder="Business address…"></textarea></div>
+      <div class="fd"><label>Occupation</label><input placeholder="e.g. Farmer, Trader"/></div>
+      <div class="fd"><label>Monthly Income</label><input type="number" placeholder="$0.00"/></div>
+      <div class="fd"><label>Next of Kin Name</label><input placeholder="Full name"/></div>
+      <div class="fd"><label>Next of Kin Phone</label><input placeholder="+234…"/></div>
+    </div>
+  </div></div>
+  <div style="display:flex;gap:10px;justify-content:flex-end">
+    <button class="btn bo" onclick="nav('clients')">Cancel</button>
+    <button class="btn bp" onclick="toast('Client registered!','success');nav('clients')">Save Client</button>
+  </div>
+</div>
+
+<!-- ██ GROUPS ██ -->
+<div class="page" id="p-groups">
+  <div class="ph"><div><h1>Groups</h1><p>Manage solidarity lending groups.</p></div><div class="ph-r"><button class="btn btn-sm bp" onclick="nav('group-new')">＋ New Group</button></div></div>
+  <div class="sr s3">
+    <div class="sc bl"><div class="sl">Total Groups</div><div class="sv">842</div></div>
+    <div class="sc gg"><div class="sl">Active</div><div class="sv">798</div></div>
+    <div class="sc oo"><div class="sl">Total Members</div><div class="sv">6,210</div></div>
+  </div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Group ID</th><th>Group Name</th><th>Members</th><th>Branch</th><th>Officer</th><th>Active Loans</th><th>Portfolio</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>GRP-001</td><td><strong>Sunrise Women</strong></td><td>12</td><td>Lagos Main</td><td>James Osei</td><td>8</td><td>$14,400</td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bp">View</button></td></tr>
+      <tr><td>GRP-002</td><td><strong>Farmers United</strong></td><td>15</td><td>Accra North</td><td>Aisha Bello</td><td>14</td><td>$28,000</td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bp">View</button></td></tr>
+      <tr><td>GRP-003</td><td><strong>Market Women Coop</strong></td><td>20</td><td>Abuja Central</td><td>Chidi Obi</td><td>18</td><td>$36,000</td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bp">View</button></td></tr>
+      <tr><td>GRP-004</td><td><strong>Nairobi Traders</strong></td><td>10</td><td>Nairobi East</td><td>Priya Sharma</td><td>6</td><td>$9,600</td><td><span class="b bw2">At Risk</span></td><td><button class="btn btn-xs bp">View</button></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ GROUP NEW ██ -->
+<div class="page" id="p-group-new">
+  <div class="ph"><div><h1>New Group</h1></div></div>
+  <div class="card"><div class="cb"><div class="fg fg3">
+    <div class="fd"><label>Group Name <span class="req">*</span></label><input placeholder="Group name"/></div>
+    <div class="fd"><label>Group Type</label><select><option>Solidarity Group</option><option>Village Bank</option><option>Co-operative</option></select></div>
+    <div class="fd"><label>Branch <span class="req">*</span></label><select><option>Lagos Main</option><option>Abuja Central</option><option>Accra North</option></select></div>
+    <div class="fd"><label>Loan Officer</label><select><option>James Osei</option><option>Aisha Bello</option><option>Chidi Obi</option></select></div>
+    <div class="fd"><label>Meeting Day</label><select><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option></select></div>
+    <div class="fd"><label>Formation Date</label><input type="date"/></div>
+    <div class="fd"><label>Meeting Location</label><input placeholder="Address or GPS"/></div>
+    <div class="fd"><label>Group Leader</label><input placeholder="Client ID or name"/></div>
+  </div></div></div>
+  <div style="display:flex;gap:10px;justify-content:flex-end">
+    <button class="btn bo" onclick="nav('groups')">Cancel</button>
+    <button class="btn bp" onclick="toast('Group created!','success');nav('groups')">Create Group</button>
+  </div>
+</div>
+
+<!-- ██ KYC ██ -->
+<div class="page" id="p-kyc">
+  <div class="ph"><div><h1>KYC / AML Compliance</h1><p>Verify client identities and screen for AML risks.</p></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('AML screen running…','info')">🔍 Run AML Screen</button></div></div>
+  <div class="sr s4">
+    <div class="sc gg"><div class="sl">Verified</div><div class="sv">11,612</div></div>
+    <div class="sc oo"><div class="sl">Pending</div><div class="sv">143</div></div>
+    <div class="sc rr"><div class="sl">Failed / Flagged</div><div class="sv">24</div></div>
+    <div class="sc pp"><div class="sl">AML Alerts</div><div class="sv">7</div></div>
+  </div>
+  <div class="al al-w">⚠️ <strong>7 AML alerts</strong> require immediate review. Suspicious transaction patterns detected on 3 accounts.</div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Client ID</th><th>Name</th><th>ID Type</th><th>Submitted</th><th>Risk Score</th><th>AML</th><th>KYC Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr><td>CLT-1003</td><td>Ngozi Adeyemi</td><td>National ID</td><td>Mar 12</td><td><span style="color:var(--green)">Low (22)</span></td><td><span class="b bs">Clear</span></td><td><span class="b bw2">Pending</span></td><td><button class="btn btn-xs bg" onclick="toast('KYC Approved!','success')">Approve</button> <button class="btn btn-xs bd" onclick="toast('KYC Rejected','error')">Reject</button></td></tr>
+      <tr><td>CLT-1088</td><td>Yusuf Abubakar</td><td>Passport</td><td>Mar 11</td><td><span style="color:var(--orange)">Medium (55)</span></td><td><span class="b bw2">Review</span></td><td><span class="b bw2">Pending</span></td><td><button class="btn btn-xs bw" onclick="toast('Flagged for review','info')">Flag</button></td></tr>
+      <tr><td>CLT-1092</td><td>Adaeze Okonkwo</td><td>Driver's License</td><td>Mar 10</td><td><span style="color:var(--red)">High (78)</span></td><td><span class="b br">Alert</span></td><td><span class="b br">Failed</span></td><td><button class="btn btn-xs bd" onclick="toast('Blacklisted','error')">Blacklist</button></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ LOAN APPLICATIONS ██ -->
+<div class="page" id="p-loan-apps">
+  <div class="ph"><div><h1>Loan Applications</h1><p>Review and process incoming loan applications.</p></div><div class="ph-r"><button class="btn btn-sm bp" onclick="nav('loan-new')">＋ New Application</button></div></div>
+  <div class="sr s5">
+    <div class="sc bl"><div class="sl">Submitted</div><div class="sv">47</div></div>
+    <div class="sc oo"><div class="sl">Under Review</div><div class="sv">23</div></div>
+    <div class="sc pp"><div class="sl">Approved</div><div class="sv">18</div></div>
+    <div class="sc gg"><div class="sl">Disbursed</div><div class="sv">12</div></div>
+    <div class="sc rr"><div class="sl">Rejected</div><div class="sv">6</div></div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="ct">Applications Pipeline</span>
+      <div style="display:flex;gap:8px"><select style="padding:5px 9px;border:1.5px solid var(--border);border-radius:var(--r);font-size:.75rem"><option>All Status</option><option>Submitted</option><option>Approved</option><option>Rejected</option></select><button class="btn btn-sm bo">⬇ Export</button></div>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>App ID</th><th>Client</th><th>Product</th><th>Amount</th><th>Term</th><th>Officer</th><th>Applied</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td>APP-001</td><td>Amara Diallo</td><td>SME Loan</td><td>$5,000</td><td>12 mo</td><td>James Osei</td><td>Mar 10</td><td><span class="b bi">Under Review</span></td><td><button class="btn btn-xs bp" onclick="openM('m-loan-app')">Review</button></td></tr>
+        <tr><td>APP-002</td><td>Ngozi Adeyemi</td><td>Agricultural</td><td>$2,200</td><td>18 mo</td><td>Aisha Bello</td><td>Mar 11</td><td><span class="b bw2">Submitted</span></td><td><button class="btn btn-xs bp" onclick="openM('m-loan-app')">Review</button></td></tr>
+        <tr><td>APP-003</td><td>Kofi Mensah</td><td>Personal</td><td>$800</td><td>6 mo</td><td>James Osei</td><td>Mar 11</td><td><span class="b bs">Approved</span></td><td><button class="btn btn-xs bg" onclick="toast('Disbursed!','success')">Disburse</button></td></tr>
+        <tr><td>APP-004</td><td>Fatima Hassan</td><td>Group Loan</td><td>$1,500</td><td>9 mo</td><td>Chidi Obi</td><td>Mar 12</td><td><span class="b btl">Disbursed</span></td><td><button class="btn btn-xs bo" onclick="openM('m-loan-app')">View</button></td></tr>
+        <tr><td>APP-005</td><td>Samuel Otieno</td><td>SME Loan</td><td>$12,000</td><td>24 mo</td><td>Aisha Bello</td><td>Mar 12</td><td><span class="b br">Rejected</span></td><td><button class="btn btn-xs bo" onclick="openM('m-loan-app')">View</button></td></tr>
+        <tr><td>APP-006</td><td>Marie Nguyen</td><td>Agricultural</td><td>$3,400</td><td>12 mo</td><td>James Osei</td><td>Mar 13</td><td><span class="b bw2">Submitted</span></td><td><button class="btn btn-xs bp" onclick="openM('m-loan-app')">Review</button></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ██ NEW LOAN ██ -->
+<div class="page" id="p-loan-new">
+  <div class="ph"><div><h1>New Loan Application</h1></div></div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(this,'lt')">1. Client</button>
+    <button class="tab" onclick="switchTab(this,'lt')">2. Loan Details</button>
+    <button class="tab" onclick="switchTab(this,'lt')">3. Collateral</button>
+    <button class="tab" onclick="switchTab(this,'lt')">4. Documents</button>
+    <button class="tab" onclick="switchTab(this,'lt')">5. Review</button>
+  </div>
+  <div class="card"><div class="cb">
+    <div class="fg fg3">
+      <div class="fd"><label>Client <span class="req">*</span></label><select><option>Select client…</option><option>Amara Diallo (CLT-1001)</option><option>Kofi Mensah (CLT-1002)</option></select></div>
+      <div class="fd"><label>Loan Product <span class="req">*</span></label><select><option>Select product…</option><option>SME Business Loan</option><option>Personal Loan</option><option>Agricultural Loan</option><option>Group Loan</option></select></div>
+      <div class="fd"><label>Loan Amount <span class="req">*</span></label><input type="number" placeholder="$0.00"/></div>
+      <div class="fd"><label>Term <span class="req">*</span></label><select><option>3 months</option><option>6 months</option><option>12 months</option><option>18 months</option><option>24 months</option><option>36 months</option></select></div>
+      <div class="fd"><label>Interest Rate (%)</label><input type="number" value="18"/></div>
+      <div class="fd"><label>Interest Method</label><select><option>Declining Balance</option><option>Flat Rate</option></select></div>
+      <div class="fd"><label>Repayment Frequency</label><select><option>Monthly</option><option>Bi-Weekly</option><option>Weekly</option></select></div>
+      <div class="fd"><label>Disbursement Date</label><input type="date"/></div>
+      <div class="fd"><label>Grace Period (days)</label><input type="number" value="30"/></div>
+      <div class="fd"><label>Origination Fee (%)</label><input type="number" value="2"/></div>
+      <div class="fd"><label>Assigned Officer</label><select><option>James Osei</option><option>Aisha Bello</option><option>Chidi Obi</option></select></div>
+      <div class="fd"><label>Branch</label><select><option>Lagos Main</option><option>Abuja Central</option></select></div>
+    </div>
+    <div class="fg fg2" style="margin-top:14px">
+      <div class="fd"><label>Loan Purpose <span class="req">*</span></label><textarea placeholder="Describe purpose…"></textarea></div>
+      <div class="fd"><label>Internal Notes</label><textarea placeholder="Officer notes…"></textarea></div>
+    </div>
+  </div></div>
+  <div style="display:flex;gap:10px;justify-content:flex-end">
+    <button class="btn bo" onclick="nav('loan-apps')">Cancel</button>
+    <button class="btn bgh" onclick="toast('Draft saved','info')">Save Draft</button>
+    <button class="btn bp" onclick="toast('Application submitted!','success');nav('loan-apps')">Submit Application</button>
+  </div>
+</div>
+
+<!-- ██ LOAN ACCOUNTS ██ -->
+<div class="page" id="p-loan-accounts">
+  <div class="ph"><div><h1>Loan Accounts</h1><p>All active and closed loan accounts.</p></div><div class="ph-r"><button class="btn btn-sm bo">⬇ Export</button></div></div>
+  <div class="sr s4">
+    <div class="sc bl"><div class="sl">Total Loans</div><div class="sv">8,234</div></div>
+    <div class="sc gg"><div class="sl">Outstanding</div><div class="sv">$4.2M</div></div>
+    <div class="sc oo"><div class="sl">Interest Earned YTD</div><div class="sv">$184K</div></div>
+    <div class="sc rr"><div class="sl">Write-offs YTD</div><div class="sv">$18K</div></div>
+  </div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Loan ID</th><th>Client</th><th>Product</th><th>Principal</th><th>Outstanding</th><th>Rate</th><th>Next Due</th><th>PAR Days</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr><td>LN-2891</td><td>Amara Diallo</td><td>SME</td><td>$5,000</td><td>$4,200</td><td>18%</td><td>Apr 1</td><td>0</td><td><span class="b bs">Current</span></td><td><button class="btn btn-xs bp" onclick="openM('m-loan-detail')">View</button></td></tr>
+      <tr><td>LN-2887</td><td>Kofi Mensah</td><td>Personal</td><td>$800</td><td>$640</td><td>22%</td><td>Apr 5</td><td>0</td><td><span class="b bs">Current</span></td><td><button class="btn btn-xs bp" onclick="openM('m-loan-detail')">View</button></td></tr>
+      <tr><td>LN-2851</td><td>Ngozi Adeyemi</td><td>Agricultural</td><td>$2,200</td><td>$1,980</td><td>15%</td><td>Mar 28</td><td>14</td><td><span class="b bw2">Watch</span></td><td><button class="btn btn-xs bp" onclick="openM('m-loan-detail')">View</button></td></tr>
+      <tr><td>LN-2744</td><td>Samuel Otieno</td><td>Group</td><td>$1,500</td><td>$1,100</td><td>20%</td><td>Mar 15</td><td>32</td><td><span class="b br">PAR 30</span></td><td><button class="btn btn-xs bw" onclick="openM('m-repayment')">Collect</button></td></tr>
+      <tr><td>LN-2651</td><td>Ibrahim Sow</td><td>Personal</td><td>$4,500</td><td>$4,200</td><td>24%</td><td>Feb 8</td><td>62</td><td><span class="b br">PAR 60</span></td><td><button class="btn btn-xs bd">Action</button></td></tr>
+      <tr><td>LN-2550</td><td>Chukwudi Eze</td><td>SME</td><td>$12,000</td><td>$9,500</td><td>16%</td><td>Apr 1</td><td>0</td><td><span class="b bs">Current</span></td><td><button class="btn btn-xs bp" onclick="openM('m-loan-detail')">View</button></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ LOAN REPAYMENTS ██ -->
+<div class="page" id="p-loan-repayments">
+  <div class="ph"><div><h1>Repayments</h1><p>Record and manage loan repayments.</p></div><div class="ph-r"><button class="btn btn-sm bp" onclick="openM('m-repayment')">＋ Record Repayment</button></div></div>
+  <div class="sr s4">
+    <div class="sc gg"><div class="sl">Collected Today</div><div class="sv">$12,400</div></div>
+    <div class="sc bl"><div class="sl">Collected This Month</div><div class="sv">$184K</div></div>
+    <div class="sc oo"><div class="sl">Expected This Month</div><div class="sv">$191K</div></div>
+    <div class="sc tt"><div class="sl">Collection Rate</div><div class="sv">96.2%</div></div>
+  </div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Receipt #</th><th>Date</th><th>Client</th><th>Loan ID</th><th>Amount</th><th>Principal</th><th>Interest</th><th>Penalty</th><th>Method</th><th>Officer</th></tr></thead>
+    <tbody>
+      <tr><td>REC-8821</td><td>Mar 13</td><td>Kofi Mensah</td><td>LN-2887</td><td>$160</td><td>$133</td><td>$27</td><td>$0</td><td>Cash</td><td>James Osei</td></tr>
+      <tr><td>REC-8820</td><td>Mar 13</td><td>Amara Diallo</td><td>LN-2891</td><td>$450</td><td>$375</td><td>$75</td><td>$0</td><td>Mobile Money</td><td>Chidi Obi</td></tr>
+      <tr><td>REC-8819</td><td>Mar 12</td><td>Chukwudi Eze</td><td>LN-2550</td><td>$600</td><td>$520</td><td>$80</td><td>$0</td><td>Bank Transfer</td><td>Aisha Bello</td></tr>
+      <tr><td>REC-8818</td><td>Mar 12</td><td>Marie Nguyen</td><td>LN-2600</td><td>$340</td><td>$290</td><td>$50</td><td>$0</td><td>Cash</td><td>James Osei</td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ LOAN SCHEDULE ██ -->
+<div class="page" id="p-loan-schedule">
+  <div class="ph"><div><h1>Repayment Schedules</h1></div><div class="ph-r"><button class="btn btn-sm bo" onclick="window.print()">🖨️ Print</button></div></div>
+  <div class="card"><div class="cb">
+    <div class="fg fg3" style="margin-bottom:16px">
+      <div class="fd"><label>Loan ID</label><input value="LN-2891"/></div>
+      <div class="fd"><label>Client</label><input value="Amara Diallo" readonly/></div>
+      <div class="fd" style="justify-content:flex-end;padding-top:18px"><button class="btn bp" onclick="toast('Schedule loaded','info')">Load</button></div>
+    </div>
+    <div class="ip" style="margin-bottom:16px">
+      <div class="ipi"><div class="il">Product</div><div class="iv">SME Business Loan</div></div>
+      <div class="ipi"><div class="il">Principal</div><div class="iv">$5,000</div></div>
+      <div class="ipi"><div class="il">Rate</div><div class="iv">18% p.a. Declining</div></div>
+      <div class="ipi"><div class="il">Term</div><div class="iv">12 months</div></div>
+      <div class="ipi"><div class="il">Disbursed</div><div class="iv">Mar 1, 2026</div></div>
+      <div class="ipi"><div class="il">Total Repayable</div><div class="iv">$5,487.50</div></div>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>#</th><th>Due Date</th><th>Opening Bal.</th><th>Principal</th><th>Interest</th><th>Total Due</th><th>Paid</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr style="background:#f0fdf4"><td>1</td><td>Apr 1, 2026</td><td>$5,000</td><td>$375.00</td><td>$75.00</td><td>$450.00</td><td>$450.00</td><td><span class="b bs">Paid</span></td></tr>
+        <tr><td>2</td><td>May 1, 2026</td><td>$4,625</td><td>$375.00</td><td>$69.38</td><td>$444.38</td><td>–</td><td><span class="b bw2">Upcoming</span></td></tr>
+        <tr><td>3</td><td>Jun 1, 2026</td><td>$4,250</td><td>$375.00</td><td>$63.75</td><td>$438.75</td><td>–</td><td><span class="b bgr">Future</span></td></tr>
+        <tr><td>4</td><td>Jul 1, 2026</td><td>$3,875</td><td>$375.00</td><td>$58.13</td><td>$433.13</td><td>–</td><td><span class="b bgr">Future</span></td></tr>
+        <tr><td>5</td><td>Aug 1, 2026</td><td>$3,500</td><td>$375.00</td><td>$52.50</td><td>$427.50</td><td>–</td><td><span class="b bgr">Future</span></td></tr>
+        <tr><td colspan="7" style="text-align:center;color:var(--gray);font-style:italic;padding:8px">… 7 more instalments</td><td></td></tr>
+      </tbody>
+    </table></div>
+  </div></div>
+</div>
+
+<!-- ██ LOAN PRODUCTS ██ -->
+<div class="page" id="p-loan-products">
+  <div class="ph"><div><h1>Loan Products</h1><p>Configure and manage all loan product types.</p></div><div class="ph-r"><button class="btn btn-sm bp" onclick="openM('m-new-product')">＋ New Product</button></div></div>
+  <div class="g3">
+    <div class="card" style="border-top:4px solid var(--blue)"><div class="ch"><span class="ct">SME Business Loan</span><span class="b bs">Active</span></div><div class="cb"><div class="ip">
+      <div class="ipi"><div class="il">Rate</div><div class="iv">18% p.a.</div></div>
+      <div class="ipi"><div class="il">Max Amount</div><div class="iv">$50,000</div></div>
+      <div class="ipi"><div class="il">Term Range</div><div class="iv">6–36 months</div></div>
+      <div class="ipi"><div class="il">Grace Period</div><div class="iv">30 days</div></div>
+      <div class="ipi"><div class="il">Origination Fee</div><div class="iv">2%</div></div>
+      <div class="ipi"><div class="il">Active Loans</div><div class="iv">3,241</div></div>
+    </div></div><div class="cf" style="display:flex;gap:6px;border-top:1px solid var(--border);padding:10px 16px"><button class="btn btn-sm bo">Edit</button><button class="btn btn-sm bt">Clone</button></div></div>
+    <div class="card" style="border-top:4px solid var(--teal)"><div class="ch"><span class="ct">Personal Loan</span><span class="b bs">Active</span></div><div class="cb"><div class="ip">
+      <div class="ipi"><div class="il">Rate</div><div class="iv">22% p.a.</div></div>
+      <div class="ipi"><div class="il">Max Amount</div><div class="iv">$5,000</div></div>
+      <div class="ipi"><div class="il">Term Range</div><div class="iv">3–24 months</div></div>
+      <div class="ipi"><div class="il">Grace Period</div><div class="iv">7 days</div></div>
+      <div class="ipi"><div class="il">Origination Fee</div><div class="iv">1.5%</div></div>
+      <div class="ipi"><div class="il">Active Loans</div><div class="iv">2,110</div></div>
+    </div></div><div class="cf" style="display:flex;gap:6px;border-top:1px solid var(--border);padding:10px 16px"><button class="btn btn-sm bo">Edit</button><button class="btn btn-sm bt">Clone</button></div></div>
+    <div class="card" style="border-top:4px solid var(--orange)"><div class="ch"><span class="ct">Agricultural Loan</span><span class="b bs">Active</span></div><div class="cb"><div class="ip">
+      <div class="ipi"><div class="il">Rate</div><div class="iv">15% p.a.</div></div>
+      <div class="ipi"><div class="il">Max Amount</div><div class="iv">$10,000</div></div>
+      <div class="ipi"><div class="il">Term Range</div><div class="iv">12–18 months</div></div>
+      <div class="ipi"><div class="il">Grace Period</div><div class="iv">90 days</div></div>
+      <div class="ipi"><div class="il">Origination Fee</div><div class="iv">1%</div></div>
+      <div class="ipi"><div class="il">Active Loans</div><div class="iv">1,480</div></div>
+    </div></div><div class="cf" style="display:flex;gap:6px;border-top:1px solid var(--border);padding:10px 16px"><button class="btn btn-sm bo">Edit</button><button class="btn btn-sm bt">Clone</button></div></div>
+  </div>
+</div>
+
+<!-- ██ LOAN CALCULATOR ██ -->
+<div class="page" id="p-loan-calc">
+  <div class="ph"><div><h1>Loan Calculator</h1><p>Estimate repayment before creating a loan.</p></div></div>
+  <div style="max-width:520px">
+    <div class="card"><div class="cb">
+      <div class="fg fg2">
+        <div class="fd"><label>Loan Amount</label><input type="number" id="ca" value="5000" oninput="calcLoan()"/></div>
+        <div class="fd"><label>Annual Rate (%)</label><input type="number" id="cr2" value="18" oninput="calcLoan()"/></div>
+        <div class="fd"><label>Term (months)</label><input type="number" id="ct" value="12" oninput="calcLoan()"/></div>
+        <div class="fd"><label>Method</label><select id="cm" onchange="calcLoan()"><option value="flat">Flat Rate</option><option value="dec">Declining Balance</option></select></div>
+        <div class="fd"><label>Origination Fee (%)</label><input type="number" id="cf2" value="2" oninput="calcLoan()"/></div>
+        <div class="fd"><label>Grace Period (days)</label><input type="number" value="30"/></div>
+      </div>
+      <div class="cr" id="calcResult">
+        <div class="crr"><span>Monthly Payment</span><span id="c_m">$450.00</span></div>
+        <div class="crr"><span>Total Interest</span><span id="c_i">$487.50</span></div>
+        <div class="crr"><span>Origination Fee</span><span id="c_f">$100.00</span></div>
+        <div class="crr"><span>Total Repayable</span><span id="c_t">$5,587.50</span></div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ██ COLLECTIONS ██ -->
+<div class="page" id="p-collections">
+  <div class="ph"><div><h1>Collections Center</h1><p>Manage overdue accounts and drive recovery.</p></div>
+  <div class="ph-r"><button class="btn btn-sm bw" onclick="toast('Bulk reminders sent','info')">📨 Bulk Reminder</button><button class="btn btn-sm bp" onclick="openM('m-repayment')">＋ Record Payment</button></div></div>
+  <div class="sr s4">
+    <div class="sc rr"><div class="sl">Overdue Accounts</div><div class="sv">312</div></div>
+    <div class="sc oo"><div class="sl">Overdue Amount</div><div class="sv">$148K</div></div>
+    <div class="sc gg"><div class="sl">Collected Today</div><div class="sv">$12,400</div></div>
+    <div class="sc tt"><div class="sl">Collection Rate</div><div class="sv">96.2%</div></div>
+  </div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Loan ID</th><th>Client</th><th>Phone</th><th>Days Overdue</th><th>Overdue Amt</th><th>Last Contact</th><th>Priority</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr><td>LN-2651</td><td>Ibrahim Sow</td><td>+221-77-890-1234</td><td><strong style="color:var(--red)">62</strong></td><td>$4,200</td><td>Mar 10</td><td><span class="b br">Critical</span></td><td><button class="btn btn-xs bg" onclick="openM('m-repayment')">Pay</button> <button class="btn btn-xs bw" onclick="toast('Calling client…','info')">Call</button></td></tr>
+      <tr><td>LN-2145</td><td>Kofi Asante</td><td>+233-24-111-2222</td><td><strong style="color:var(--red)">45</strong></td><td>$3,200</td><td>Mar 11</td><td><span class="b br">High</span></td><td><button class="btn btn-xs bg" onclick="openM('m-repayment')">Pay</button> <button class="btn btn-xs bw">Call</button></td></tr>
+      <tr><td>LN-2287</td><td>Ngozi Adeyemi</td><td>+234-805-678-9012</td><td><strong style="color:var(--orange)">38</strong></td><td>$1,500</td><td>Mar 12</td><td><span class="b bw2">Medium</span></td><td><button class="btn btn-xs bg" onclick="openM('m-repayment')">Pay</button> <button class="btn btn-xs bo">SMS</button></td></tr>
+      <tr><td>LN-2400</td><td>Samuel Otieno</td><td>+254-72-222-3333</td><td><strong style="color:var(--orange)">32</strong></td><td>$900</td><td>Mar 11</td><td><span class="b bw2">Medium</span></td><td><button class="btn btn-xs bg" onclick="openM('m-repayment')">Pay</button> <button class="btn btn-xs bo">SMS</button></td></tr>
+      <tr><td>LN-2531</td><td>Marie Dupont</td><td>+33-6-1234-5678</td><td>31</td><td>$2,100</td><td>Mar 12</td><td><span class="b bw2">Medium</span></td><td><button class="btn btn-xs bg" onclick="openM('m-repayment')">Pay</button> <button class="btn btn-xs bo">SMS</button></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ PAR REPORT ██ -->
+<div class="page" id="p-par-report">
+  <div class="ph"><div><h1>PAR Report</h1><p>Portfolio At Risk analysis by aging bucket.</p></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Exported','success')">⬇ Export</button></div></div>
+  <div class="sr s5">
+    <div class="sc gg"><div class="sl">Current (0 days)</div><div class="sv">$3.98M</div><div class="ss">94.8%</div></div>
+    <div class="sc oo"><div class="sl">PAR 1–30</div><div class="sv">$84K</div><div class="ss">2.0%</div></div>
+    <div class="sc rr"><div class="sl">PAR 31–60</div><div class="sv">$63K</div><div class="ss">1.5%</div></div>
+    <div class="sc rr"><div class="sl">PAR 61–90</div><div class="sv">$42K</div><div class="ss">1.0%</div></div>
+    <div class="sc rr"><div class="sl">PAR 90+</div><div class="sv">$33K</div><div class="ss">0.7%</div></div>
+  </div>
+  <div class="card"><div class="cb"><div class="tw"><table>
+    <thead><tr><th>Branch</th><th>Active Loans</th><th>Portfolio</th><th>PAR 30</th><th>PAR 60</th><th>PAR 90+</th><th>Write-off</th><th>NLP Ratio</th></tr></thead>
+    <tbody>
+      <tr><td>Lagos Main</td><td>3,210</td><td>$1.1M</td><td>2.1%</td><td>0.8%</td><td>0.2%</td><td>$4,200</td><td>97.8%</td></tr>
+      <tr><td>Abuja Central</td><td>2,840</td><td>$980K</td><td>4.2%</td><td>1.8%</td><td>0.5%</td><td>$6,800</td><td>95.8%</td></tr>
+      <tr><td>Accra North</td><td>2,150</td><td>$740K</td><td>1.9%</td><td>0.6%</td><td>0.1%</td><td>$2,100</td><td>98.1%</td></tr>
+      <tr><td>Nairobi East</td><td>1,980</td><td>$680K</td><td>6.8%</td><td>3.2%</td><td>1.1%</td><td>$8,400</td><td>93.2%</td></tr>
+      <tr><td>Manila West</td><td>2,667</td><td>$700K</td><td>3.5%</td><td>1.4%</td><td>0.4%</td><td>$5,100</td><td>96.5%</td></tr>
+    </tbody>
+  </table></div></div></div>
+</div>
+
+<!-- ██ SAVINGS ██ -->
+<div class="page" id="p-savings">
+  <div class="ph"><div><h1>Savings Accounts</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="nav('savings-new')">＋ New Account</button></div></div>
+  <div class="sr s4">
+    <div class="sc tt"><div class="sl">Total Accounts</div><div class="sv">7,757</div></div>
+    <div class="sc gg"><div class="sl">Total Balance</div><div class="sv">$1.9M</div></div>
+    <div class="sc bl"><div class="sl">Interest Payable</div><div class="sv">$28K</div></div>
+    <div class="sc oo"><div class="sl">Dormant</div><div class="sv">142</div></div>
+  </div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Account No.</th><th>Client</th><th>Product</th><th>Balance</th><th>Rate</th><th>Last Txn</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr><td>SAV-001001</td><td>Amara Diallo</td><td>Savings</td><td>$1,240</td><td>5%</td><td>Mar 13</td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bp">View</button> <button class="btn btn-xs bt" onclick="openM('m-txn')">Transact</button></td></tr>
+      <tr><td>SAV-001002</td><td>Kofi Mensah</td><td>Savings</td><td>$320</td><td>5%</td><td>Mar 10</td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bp">View</button> <button class="btn btn-xs bt" onclick="openM('m-txn')">Transact</button></td></tr>
+      <tr><td>FD-001003</td><td>Chukwudi Eze</td><td>Fixed Deposit</td><td>$5,000</td><td>8%</td><td>Jan 1</td><td><span class="b bw2">Maturing</span></td><td><button class="btn btn-xs bp">View</button> <button class="btn btn-xs bg">Renew</button></td></tr>
+      <tr><td>MM-001004</td><td>Fatima Hassan</td><td>Money Market</td><td>$8,500</td><td>6.5%</td><td>Mar 12</td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bp">View</button> <button class="btn btn-xs bt" onclick="openM('m-txn')">Transact</button></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ SAVINGS NEW ██ -->
+<div class="page" id="p-savings-new">
+  <div class="ph"><div><h1>New Savings Account</h1></div></div>
+  <div class="card"><div class="cb"><div class="fg fg3">
+    <div class="fd"><label>Client <span class="req">*</span></label><select><option>Amara Diallo</option><option>Kofi Mensah</option></select></div>
+    <div class="fd"><label>Product <span class="req">*</span></label><select><option>Savings Account</option><option>Fixed Deposit</option><option>Money Market</option></select></div>
+    <div class="fd"><label>Opening Amount <span class="req">*</span></label><input type="number" placeholder="$0.00"/></div>
+    <div class="fd"><label>Opening Date</label><input type="date"/></div>
+    <div class="fd"><label>Branch</label><select><option>Lagos Main</option><option>Accra North</option></select></div>
+  </div></div></div>
+  <div style="display:flex;gap:10px;justify-content:flex-end">
+    <button class="btn bo" onclick="nav('savings')">Cancel</button>
+    <button class="btn bp" onclick="toast('Account opened!','success');nav('savings')">Open Account</button>
+  </div>
+</div>
+
+<!-- ██ SAVINGS TXN ██ -->
+<div class="page" id="p-savings-txn">
+  <div class="ph"><div><h1>Deposit / Withdrawal</h1></div></div>
+  <div class="card"><div class="cb"><div class="fg fg3">
+    <div class="fd"><label>Account No.</label><input placeholder="SAV-XXXXXX"/></div>
+    <div class="fd"><label>Type</label><select><option>Deposit</option><option>Withdrawal</option></select></div>
+    <div class="fd"><label>Amount</label><input type="number" placeholder="$0.00"/></div>
+    <div class="fd"><label>Date</label><input type="date"/></div>
+    <div class="fd"><label>Payment Method</label><select><option>Cash</option><option>Mobile Money</option><option>Bank Transfer</option></select></div>
+    <div class="fd"><label>Reference</label><input placeholder="Optional"/></div>
+  </div></div></div>
+  <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px">
+    <button class="btn bp" onclick="toast('Transaction posted!','success')">Post Transaction</button>
+  </div>
+</div>
+
+<!-- ██ FIXED DEPOSITS ██ -->
+<div class="page" id="p-fixed-deposits">
+  <div class="ph"><div><h1>Fixed Deposits</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="nav('fd-new')">＋ New FD</button></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>FD No.</th><th>Client</th><th>Principal</th><th>Rate</th><th>Start</th><th>Maturity</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>FD-001003</td><td>Chukwudi Eze</td><td>$5,000</td><td>8%</td><td>Jan 1</td><td>Mar 15, 2026</td><td><span class="b bw2">Maturing</span></td><td><button class="btn btn-xs bg">Renew</button></td></tr>
+      <tr><td>FD-001010</td><td>Samuel Otieno</td><td>$10,000</td><td>9%</td><td>Jan 1</td><td>Dec 31, 2026</td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bo">View</button></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ FD NEW ██ -->
+<div class="page" id="p-fd-new">
+  <div class="ph"><div><h1>New Fixed Deposit</h1></div></div>
+  <div class="card"><div class="cb"><div class="fg fg3">
+    <div class="fd"><label>Client <span class="req">*</span></label><select><option>Chukwudi Eze</option><option>Amara Diallo</option></select></div>
+    <div class="fd"><label>Principal <span class="req">*</span></label><input type="number" placeholder="$0.00"/></div>
+    <div class="fd"><label>Interest Rate (%)</label><input type="number" value="8"/></div>
+    <div class="fd"><label>Term</label><select><option>3 months</option><option>6 months</option><option>12 months</option><option>24 months</option></select></div>
+    <div class="fd"><label>Start Date</label><input type="date"/></div>
+    <div class="fd"><label>On Maturity</label><select><option>Auto Renew</option><option>Pay Out</option></select></div>
+  </div></div></div>
+  <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px">
+    <button class="btn bo" onclick="nav('fixed-deposits')">Cancel</button>
+    <button class="btn bp" onclick="toast('Fixed deposit opened!','success');nav('fixed-deposits')">Open FD</button>
+  </div>
+</div>
+
+<!-- ██ FD MATURITY ██ -->
+<div class="page" id="p-fd-maturity">
+  <div class="ph"><div><h1>FD Maturity Tracker</h1></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>FD No.</th><th>Client</th><th>Principal</th><th>Interest</th><th>Maturity Date</th><th>Days Left</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>FD-001003</td><td>Chukwudi Eze</td><td>$5,000</td><td>$400</td><td>Mar 15, 2026</td><td><strong style="color:var(--red)">2</strong></td><td><button class="btn btn-xs bg">Renew</button> <button class="btn btn-xs bo">Pay Out</button></td></tr>
+      <tr><td>FD-001010</td><td>Samuel Otieno</td><td>$10,000</td><td>$900</td><td>Dec 31, 2026</td><td>292</td><td><button class="btn btn-xs bo">View</button></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ SAVINGS PRODUCTS ██ -->
+<div class="page" id="p-savings-products">
+  <div class="ph"><div><h1>Savings Products</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('New product form','info')">＋ New Product</button></div></div>
+  <div class="g3">
+    <div class="card" style="border-top:4px solid var(--green)"><div class="ch"><span class="ct">Savings Account</span><span class="b bs">Active</span></div><div class="cb"><div class="ip">
+      <div class="ipi"><div class="il">Rate</div><div class="iv">5% p.a.</div></div><div class="ipi"><div class="il">Min Balance</div><div class="iv">$10</div></div>
+      <div class="ipi"><div class="il">Withdrawals</div><div class="iv">Unlimited</div></div><div class="ipi"><div class="il">Accounts</div><div class="iv">6,102</div></div>
+    </div></div></div>
+    <div class="card" style="border-top:4px solid var(--blue)"><div class="ch"><span class="ct">Fixed Deposit</span><span class="b bs">Active</span></div><div class="cb"><div class="ip">
+      <div class="ipi"><div class="il">Rate</div><div class="iv">8–10% p.a.</div></div><div class="ipi"><div class="il">Min Amount</div><div class="iv">$500</div></div>
+      <div class="ipi"><div class="il">Penalty</div><div class="iv">2% early exit</div></div><div class="ipi"><div class="il">Accounts</div><div class="iv">1,234</div></div>
+    </div></div></div>
+    <div class="card" style="border-top:4px solid var(--teal)"><div class="ch"><span class="ct">Money Market</span><span class="b bs">Active</span></div><div class="cb"><div class="ip">
+      <div class="ipi"><div class="il">Rate</div><div class="iv">6.5% p.a.</div></div><div class="ipi"><div class="il">Min Balance</div><div class="iv">$1,000</div></div>
+      <div class="ipi"><div class="il">Withdrawals</div><div class="iv">3/month</div></div><div class="ipi"><div class="il">Accounts</div><div class="iv">421</div></div>
+    </div></div></div>
+  </div>
+</div>
+
+<!-- ██ TELLER ██ -->
+<div class="page" id="p-teller">
+  <div class="ph"><div><h1>Teller Dashboard</h1><p>Today's cash session.</p></div><div class="ph-r"><button class="btn btn-sm bd" onclick="toast('Teller closed!','success')">🔚 Close of Day</button></div></div>
+  <div class="sr s4">
+    <div class="sc gg"><div class="sl">Opening Balance</div><div class="sv">$25,000</div></div>
+    <div class="sc bl"><div class="sl">Cash In</div><div class="sv">$14,200</div></div>
+    <div class="sc rr"><div class="sl">Cash Out</div><div class="sv">$8,700</div></div>
+    <div class="sc tt"><div class="sl">Closing Balance</div><div class="sv">$30,500</div></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ch"><span class="ct">📥 Cash In Transactions</span><button class="btn btn-sm bg" onclick="openM('m-txn')">＋ New</button></div><div class="tw"><table>
+      <thead><tr><th>Time</th><th>Client</th><th>Reference</th><th>Amount</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td>09:14</td><td>Kofi Mensah</td><td>LN-2887</td><td>$160</td><td>Repayment</td></tr>
+        <tr><td>10:02</td><td>Amara Diallo</td><td>SAV-001001</td><td>$500</td><td>Deposit</td></tr>
+        <tr><td>11:45</td><td>Fatima Hassan</td><td>LN-2891</td><td>$450</td><td>Repayment</td></tr>
+      </tbody>
+    </table></div></div>
+    <div class="card"><div class="ch"><span class="ct">📤 Cash Out Transactions</span><button class="btn btn-sm bd" onclick="openM('m-txn')">＋ New</button></div><div class="tw"><table>
+      <thead><tr><th>Time</th><th>Client</th><th>Reference</th><th>Amount</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td>09:45</td><td>Chukwudi Eze</td><td>APP-003</td><td>$5,000</td><td>Disbursement</td></tr>
+        <tr><td>11:10</td><td>Samuel Otieno</td><td>SAV-002011</td><td>$300</td><td>Withdrawal</td></tr>
+        <tr><td>13:30</td><td>Ngozi Adeyemi</td><td>APP-010</td><td>$3,400</td><td>Disbursement</td></tr>
+      </tbody>
+    </table></div></div>
+  </div>
+</div>
+
+<!-- ██ CASH IN ██ -->
+<div class="page" id="p-cash-in">
+  <div class="ph"><div><h1>Cash In</h1></div><div class="ph-r"><button class="btn btn-sm bg" onclick="openM('m-txn')">＋ Post Cash In</button></div></div>
+  <div class="card"><div class="cb"><div class="fg fg3">
+    <div class="fd"><label>Account / Ref</label><input placeholder="LN-XXXX or SAV-XXXX"/></div>
+    <div class="fd"><label>Client</label><input placeholder="Auto-populated" readonly/></div>
+    <div class="fd"><label>Amount</label><input type="number" placeholder="$0.00"/></div>
+    <div class="fd"><label>Type</label><select><option>Loan Repayment</option><option>Savings Deposit</option><option>Fee Payment</option></select></div>
+    <div class="fd"><label>Date</label><input type="date"/></div>
+    <div class="fd"><label>Received By</label><select><option>James Osei</option><option>Chidi Obi</option></select></div>
+  </div><div style="margin-top:14px"><button class="btn bg" onclick="toast('Cash in posted!','success')">Post Transaction</button></div></div></div>
+</div>
+
+<!-- ██ CASH OUT ██ -->
+<div class="page" id="p-cash-out">
+  <div class="ph"><div><h1>Cash Out</h1></div><div class="ph-r"><button class="btn btn-sm bd" onclick="openM('m-txn')">＋ Post Cash Out</button></div></div>
+  <div class="card"><div class="cb"><div class="fg fg3">
+    <div class="fd"><label>Account / Ref</label><input placeholder="LN-XXXX or SAV-XXXX"/></div>
+    <div class="fd"><label>Client</label><input placeholder="Auto-populated" readonly/></div>
+    <div class="fd"><label>Amount</label><input type="number" placeholder="$0.00"/></div>
+    <div class="fd"><label>Type</label><select><option>Loan Disbursement</option><option>Savings Withdrawal</option><option>Expense</option></select></div>
+    <div class="fd"><label>Date</label><input type="date"/></div>
+    <div class="fd"><label>Approved By</label><select><option>Admin User</option><option>Branch Manager</option></select></div>
+  </div><div style="margin-top:14px"><button class="btn bd" onclick="toast('Cash out posted!','success')">Post Transaction</button></div></div></div>
+</div>
+
+<!-- ██ VAULT ██ -->
+<div class="page" id="p-vault">
+  <div class="ph"><div><h1>Vault Management</h1></div></div>
+  <div class="sr s3">
+    <div class="sc gg"><div class="sl">Vault Balance</div><div class="sv">$125,000</div></div>
+    <div class="sc bl"><div class="sl">Last Reconciled</div><div class="sv">Mar 12</div></div>
+    <div class="sc oo"><div class="sl">Variance</div><div class="sv">$0.00</div></div>
+  </div>
+  <div class="card"><div class="cb"><button class="btn bp" onclick="toast('Vault reconciled!','success')">⚖️ Reconcile Now</button></div></div>
+</div>
+
+<!-- ██ CASH TRANSFER ██ -->
+<div class="page" id="p-cash-transfer">
+  <div class="ph"><div><h1>Cash Transfers</h1></div></div>
+  <div class="card"><div class="cb"><div class="fg fg3">
+    <div class="fd"><label>From</label><select><option>Vault</option><option>Teller 1</option><option>Teller 2</option></select></div>
+    <div class="fd"><label>To</label><select><option>Teller 1</option><option>Teller 2</option><option>Vault</option></select></div>
+    <div class="fd"><label>Amount</label><input type="number" placeholder="$0.00"/></div>
+  </div><div style="margin-top:14px"><button class="btn bp" onclick="toast('Transfer posted!','success')">Post Transfer</button></div></div></div>
+</div>
+
+<!-- ██ TELLER COD ██ -->
+<div class="page" id="p-teller-cod">
+  <div class="ph"><div><h1>Teller Close of Day</h1></div></div>
+  <div class="card"><div class="cb">
+    <div class="sr s4">
+      <div class="sc gg"><div class="sl">Opening Balance</div><div class="sv">$25,000</div></div>
+      <div class="sc bl"><div class="sl">Total Cash In</div><div class="sv">$14,200</div></div>
+      <div class="sc rr"><div class="sl">Total Cash Out</div><div class="sv">$8,700</div></div>
+      <div class="sc tt"><div class="sl">Expected Closing</div><div class="sv">$30,500</div></div>
+    </div>
+    <div class="fg fg2" style="margin-top:14px">
+      <div class="fd"><label>Physical Cash Count</label><input type="number" placeholder="$30,500"/></div>
+      <div class="fd"><label>Variance</label><input value="$0.00" readonly style="background:#f0fdf4;color:var(--green)"/></div>
+    </div>
+    <button class="btn bd" style="margin-top:10px" onclick="toast('Teller closed!','success')">🔚 Close Teller</button>
+  </div></div>
+</div>
+
+<!-- ██ GL / CHART OF ACCOUNTS ██ -->
+<div class="page" id="p-gl">
+  <div class="ph"><div><h1>Chart of Accounts</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('New GL account','info')">＋ New Account</button></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Code</th><th>Account Name</th><th>Category</th><th>Type</th><th>Balance</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>1000</td><td><strong>Cash & Cash Equivalents</strong></td><td>Asset</td><td>Current Asset</td><td>$420,000</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>1100</td><td>Loans Receivable</td><td>Asset</td><td>Non-current Asset</td><td>$4,200,000</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>1200</td><td>Interest Receivable</td><td>Asset</td><td>Current Asset</td><td>$84,000</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>1300</td><td>Loan Loss Reserve</td><td>Contra Asset</td><td>Current Asset</td><td>($18,000)</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>2000</td><td>Customer Deposits</td><td>Liability</td><td>Current Liability</td><td>$1,900,000</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>2100</td><td>Borrowings</td><td>Liability</td><td>Non-current Liability</td><td>$1,200,000</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>3000</td><td>Share Capital</td><td>Equity</td><td>Equity</td><td>$1,200,000</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>4000</td><td>Interest Income</td><td>Revenue</td><td>Income</td><td>$184,000</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>4100</td><td>Fee Income</td><td>Revenue</td><td>Income</td><td>$20,000</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>5000</td><td>Interest Expense</td><td>Expense</td><td>Expense</td><td>$38,000</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>5100</td><td>Loan Loss Provision</td><td>Expense</td><td>Expense</td><td>$18,000</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>5200</td><td>Operating Expenses</td><td>Expense</td><td>Expense</td><td>$50,000</td><td><span class="b bs">Active</span></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ JOURNALS ██ -->
+<div class="page" id="p-journals">
+  <div class="ph"><div><h1>Journal Entries</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="openM('m-journal')">＋ New Entry</button></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Entry ID</th><th>Date</th><th>Description</th><th>Debit Account</th><th>Credit Account</th><th>Amount</th><th>Type</th><th>Posted By</th></tr></thead>
+    <tbody>
+      <tr><td>JE-0441</td><td>Mar 13</td><td>Loan Disbursement – LN-2891</td><td>1100 Loans Receivable</td><td>1000 Cash</td><td>$5,000</td><td><span class="b bi">Auto</span></td><td>System</td></tr>
+      <tr><td>JE-0440</td><td>Mar 13</td><td>Repayment – LN-2887 (Principal)</td><td>1000 Cash</td><td>1100 Loans Receivable</td><td>$133</td><td><span class="b bi">Auto</span></td><td>System</td></tr>
+      <tr><td>JE-0439</td><td>Mar 13</td><td>Interest Income – LN-2887</td><td>1000 Cash</td><td>4000 Interest Income</td><td>$27</td><td><span class="b bi">Auto</span></td><td>System</td></tr>
+      <tr><td>JE-0438</td><td>Mar 12</td><td>Savings Deposit – SAV-001001</td><td>1000 Cash</td><td>2000 Customer Deposits</td><td>$500</td><td><span class="b bi">Auto</span></td><td>System</td></tr>
+      <tr><td>JE-0437</td><td>Mar 12</td><td>Loan Loss Provision – Q1</td><td>5100 Provision Exp.</td><td>1300 Loan Loss Reserve</td><td>$4,200</td><td><span class="b bpu2">Manual</span></td><td>Priya Sharma</td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ TRIAL BALANCE ██ -->
+<div class="page" id="p-trial-balance">
+  <div class="ph"><div><h1>Trial Balance</h1></div><div class="ph-r"><button class="btn btn-sm bo" onclick="window.print()">🖨️ Print</button></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Code</th><th>Account</th><th>Debit</th><th>Credit</th></tr></thead>
+    <tbody>
+      <tr><td>1000</td><td>Cash & Cash Equivalents</td><td>$420,000</td><td>–</td></tr>
+      <tr><td>1100</td><td>Loans Receivable</td><td>$4,200,000</td><td>–</td></tr>
+      <tr><td>2000</td><td>Customer Deposits</td><td>–</td><td>$1,900,000</td></tr>
+      <tr><td>2100</td><td>Borrowings</td><td>–</td><td>$1,200,000</td></tr>
+      <tr><td>4000</td><td>Interest Income</td><td>–</td><td>$184,000</td></tr>
+      <tr><td>5000</td><td>Interest Expense</td><td>$38,000</td><td>–</td></tr>
+      <tr style="font-weight:700;background:#f0fdf4"><td></td><td><strong>TOTAL</strong></td><td>$4,658,000</td><td>$4,658,000</td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ INCOME STATEMENT ██ -->
+<div class="page" id="p-income-stmt">
+  <div class="ph"><div><h1>Income Statement</h1><p>YTD Profit & Loss</p></div><div class="ph-r"><button class="btn btn-sm bo" onclick="window.print()">🖨️ Print</button></div></div>
+  <div style="max-width:560px"><div class="card"><div class="ch"><span class="ct">Income Statement — YTD Mar 2026</span></div><div class="cb">
+    <div style="font-size:.82rem;font-weight:700;color:var(--navy);padding:6px 0;border-bottom:2px solid var(--border);margin-bottom:8px">INCOME</div>
+    <div style="display:flex;justify-content:space-between;padding:6px 8px;font-size:.82rem"><span>Interest Income</span><span style="color:var(--green)">+$184,000</span></div>
+    <div style="display:flex;justify-content:space-between;padding:6px 8px;font-size:.82rem"><span>Fee & Commission Income</span><span style="color:var(--green)">+$20,000</span></div>
+    <div style="display:flex;justify-content:space-between;padding:8px;background:#f0fdf4;border-radius:5px;font-weight:700;margin:6px 0;font-size:.85rem"><span>Total Income</span><span style="color:var(--green)">$204,000</span></div>
+    <div style="font-size:.82rem;font-weight:700;color:var(--navy);padding:6px 0;border-bottom:2px solid var(--border);margin:10px 0 8px">EXPENSES</div>
+    <div style="display:flex;justify-content:space-between;padding:6px 8px;font-size:.82rem"><span>Interest Expense</span><span style="color:var(--red)">-$38,000</span></div>
+    <div style="display:flex;justify-content:space-between;padding:6px 8px;font-size:.82rem"><span>Loan Loss Provision</span><span style="color:var(--red)">-$18,000</span></div>
+    <div style="display:flex;justify-content:space-between;padding:6px 8px;font-size:.82rem"><span>Operating Expenses</span><span style="color:var(--red)">-$50,000</span></div>
+    <div style="display:flex;justify-content:space-between;padding:8px;background:#fef2f2;border-radius:5px;font-weight:700;margin:6px 0;font-size:.85rem"><span>Total Expenses</span><span style="color:var(--red)">-$106,000</span></div>
+    <div style="display:flex;justify-content:space-between;padding:12px;background:var(--navy);color:#fff;border-radius:7px;font-weight:700;font-size:1rem;margin-top:10px"><span>NET INCOME</span><span>$98,000</span></div>
+  </div></div></div>
+</div>
+
+<!-- ██ BALANCE SHEET ██ -->
+<div class="page" id="p-balance-sheet">
+  <div class="ph"><div><h1>Balance Sheet</h1></div><div class="ph-r"><button class="btn btn-sm bo" onclick="window.print()">🖨️ Print</button></div></div>
+  <div class="g2">
+    <div class="card"><div class="ch"><span class="ct">ASSETS</span></div><div class="cb">
+      <div style="display:flex;flex-direction:column;gap:4px;font-size:.82rem">
+        <div style="display:flex;justify-content:space-between;padding:6px 8px"><span>Cash & Equivalents</span><span>$420,000</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 8px"><span>Loans Receivable</span><span>$4,200,000</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 8px"><span>Interest Receivable</span><span>$84,000</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 8px"><span>Less: Loan Loss Reserve</span><span style="color:var(--red)">($18,000)</span></div>
+        <div style="display:flex;justify-content:space-between;padding:8px;background:#f0fdf4;font-weight:700;border-radius:5px;margin-top:4px"><span>Total Assets</span><span>$4,686,000</span></div>
+      </div>
+    </div></div>
+    <div class="card"><div class="ch"><span class="ct">LIABILITIES & EQUITY</span></div><div class="cb">
+      <div style="display:flex;flex-direction:column;gap:4px;font-size:.82rem">
+        <div style="display:flex;justify-content:space-between;padding:6px 8px"><span>Customer Deposits</span><span>$1,900,000</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 8px"><span>Borrowings</span><span>$1,200,000</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 8px"><span>Share Capital</span><span>$1,200,000</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 8px"><span>Retained Earnings</span><span>$386,000</span></div>
+        <div style="display:flex;justify-content:space-between;padding:8px;background:#f0fdf4;font-weight:700;border-radius:5px;margin-top:4px"><span>Total L + E</span><span>$4,686,000</span></div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ██ CASH FLOW ██ -->
+<div class="page" id="p-cashflow">
+  <div class="ph"><div><h1>Cash Flow Statement</h1></div></div>
+  <div style="max-width:560px"><div class="card"><div class="cb">
+    <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:8px">Operating Activities</div>
+    <div style="display:flex;justify-content:space-between;padding:6px 8px;font-size:.82rem"><span>Net Loan Disbursements</span><span style="color:var(--red)">-$320,000</span></div>
+    <div style="display:flex;justify-content:space-between;padding:6px 8px;font-size:.82rem"><span>Loan Repayments Received</span><span style="color:var(--green)">+$291,000</span></div>
+    <div style="display:flex;justify-content:space-between;padding:6px 8px;font-size:.82rem"><span>Interest Received</span><span style="color:var(--green)">+$184,000</span></div>
+    <div style="display:flex;justify-content:space-between;padding:6px 8px;font-size:.82rem"><span>Operating Expenses Paid</span><span style="color:var(--red)">-$50,000</span></div>
+    <div style="display:flex;justify-content:space-between;padding:8px;background:#f0fdf4;font-weight:700;border-radius:5px;margin:8px 0;font-size:.85rem"><span>Net Cash from Operations</span><span>$105,000</span></div>
+    <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin:10px 0 8px">Financing Activities</div>
+    <div style="display:flex;justify-content:space-between;padding:6px 8px;font-size:.82rem"><span>New Borrowings</span><span style="color:var(--green)">+$200,000</span></div>
+    <div style="display:flex;justify-content:space-between;padding:6px 8px;font-size:.82rem"><span>Loan Repayments Made</span><span style="color:var(--red)">-$80,000</span></div>
+    <div style="display:flex;justify-content:space-between;padding:8px;background:#f0fdf4;font-weight:700;border-radius:5px;margin:8px 0;font-size:.85rem"><span>Net Cash from Financing</span><span>$120,000</span></div>
+    <div style="display:flex;justify-content:space-between;padding:12px;background:var(--navy);color:#fff;border-radius:7px;font-weight:700;font-size:1rem;margin-top:8px"><span>NET CHANGE IN CASH</span><span>$225,000</span></div>
+  </div></div></div>
+</div>
+
+<!-- ██ RECONCILIATION ██ -->
+<div class="page" id="p-reconciliation">
+  <div class="ph"><div><h1>Reconciliation</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Reconciliation started','info')">⚖️ Run</button></div></div>
+  <div class="al al-s">✅ Last reconciliation: Mar 12, 2026 at 23:58. No discrepancies found.</div>
+  <div class="sr s3">
+    <div class="sc gg"><div class="sl">System Balance</div><div class="sv">$420,000</div></div>
+    <div class="sc gg"><div class="sl">Physical Count</div><div class="sv">$420,000</div></div>
+    <div class="sc gg"><div class="sl">Variance</div><div class="sv">$0.00</div></div>
+  </div>
+</div>
+
+<!-- ██ PROVISIONING ██ -->
+<div class="page" id="p-provisioning">
+  <div class="ph"><div><h1>Loan Loss Provisioning</h1></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>PAR Bucket</th><th>Portfolio</th><th>Provision Rate</th><th>Provision Amount</th></tr></thead>
+    <tbody>
+      <tr><td>Current (0 days)</td><td>$3,978,000</td><td>1%</td><td>$39,780</td></tr>
+      <tr><td>PAR 1–30</td><td>$84,000</td><td>10%</td><td>$8,400</td></tr>
+      <tr><td>PAR 31–60</td><td>$63,000</td><td>50%</td><td>$31,500</td></tr>
+      <tr><td>PAR 61–90</td><td>$42,000</td><td>75%</td><td>$31,500</td></tr>
+      <tr><td>PAR 90+</td><td>$33,000</td><td>100%</td><td>$33,000</td></tr>
+      <tr style="font-weight:700;background:#f0fdf4"><td>TOTAL</td><td>$4,200,000</td><td>–</td><td>$144,180</td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ FEE INCOME ██ -->
+<div class="page" id="p-fee-income">
+  <div class="ph"><div><h1>Fee Income</h1></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Date</th><th>Client</th><th>Fee Type</th><th>Loan ID</th><th>Amount</th></tr></thead>
+    <tbody>
+      <tr><td>Mar 13</td><td>Amara Diallo</td><td>Origination Fee (2%)</td><td>LN-2891</td><td>$100</td></tr>
+      <tr><td>Mar 12</td><td>Chukwudi Eze</td><td>Origination Fee (2%)</td><td>LN-2851</td><td>$68</td></tr>
+      <tr><td>Mar 11</td><td>Kofi Asante</td><td>Late Payment Fee</td><td>LN-2145</td><td>$32</td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ INTEREST ACCRUAL ██ -->
+<div class="page" id="p-interest-accrual">
+  <div class="ph"><div><h1>Interest Accrual</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Accrual run complete!','success')">▶ Run Accrual</button></div></div>
+  <div class="al al-i">ℹ️ Last accrual run: Mar 12, 2026 at 00:01 (Automated). Next run: Mar 14, 2026.</div>
+  <div class="sr s3">
+    <div class="sc bl"><div class="sl">Accrued YTD</div><div class="sv">$184K</div></div>
+    <div class="sc oo"><div class="sl">Accrued Today</div><div class="sv">$1,240</div></div>
+    <div class="sc gg"><div class="sl">Collected Today</div><div class="sv">$1,102</div></div>
+  </div>
+</div>
+
+<!-- ██ BRANCHES ██ -->
+<div class="page" id="p-branches">
+  <div class="ph"><div><h1>Branches</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="nav('branch-new')">＋ New Branch</button></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Code</th><th>Branch Name</th><th>Country</th><th>Manager</th><th>Clients</th><th>Loans</th><th>PAR 30</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>LAG-001</td><td><strong>Lagos Main</strong></td><td>🇳🇬 Nigeria</td><td>David Okafor</td><td>3,210</td><td>2,100</td><td>2.1%</td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bp">View</button></td></tr>
+      <tr><td>ABJ-002</td><td><strong>Abuja Central</strong></td><td>🇳🇬 Nigeria</td><td>Grace Eze</td><td>2,840</td><td>1,880</td><td>4.2%</td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bp">View</button></td></tr>
+      <tr><td>ACC-003</td><td><strong>Accra North</strong></td><td>🇬🇭 Ghana</td><td>Kwame Boateng</td><td>2,150</td><td>1,440</td><td>1.9%</td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bp">View</button></td></tr>
+      <tr><td>NBI-004</td><td><strong>Nairobi East</strong></td><td>🇰🇪 Kenya</td><td>Sarah Kamau</td><td>1,980</td><td>1,210</td><td>6.8%</td><td><span class="b bw2">Watch</span></td><td><button class="btn btn-xs bp">View</button></td></tr>
+      <tr><td>MNL-005</td><td><strong>Manila West</strong></td><td>🇵🇭 Philippines</td><td>Jose Reyes</td><td>2,667</td><td>1,604</td><td>3.5%</td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bp">View</button></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ BRANCH PERF ██ -->
+<div class="page" id="p-branch-perf">
+  <div class="ph"><div><h1>Branch Performance</h1></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Branch</th><th>Clients</th><th>Portfolio</th><th>PAR 30</th><th>Collection Rate</th><th>New Loans MTD</th><th>Disbursed MTD</th><th>Grade</th></tr></thead>
+    <tbody>
+      <tr><td>Lagos Main</td><td>3,210</td><td>$1.1M</td><td>2.1%</td><td>97.9%</td><td>48</td><td>$124K</td><td><span class="b bs">A</span></td></tr>
+      <tr><td>Abuja Central</td><td>2,840</td><td>$980K</td><td>4.2%</td><td>95.8%</td><td>32</td><td>$98K</td><td><span class="b bw2">B</span></td></tr>
+      <tr><td>Accra North</td><td>2,150</td><td>$740K</td><td>1.9%</td><td>98.1%</td><td>28</td><td>$72K</td><td><span class="b bs">A</span></td></tr>
+      <tr><td>Nairobi East</td><td>1,980</td><td>$680K</td><td>6.8%</td><td>93.2%</td><td>18</td><td>$54K</td><td><span class="b br">C</span></td></tr>
+      <tr><td>Manila West</td><td>2,667</td><td>$700K</td><td>3.5%</td><td>96.5%</td><td>25</td><td>$68K</td><td><span class="b bw2">B</span></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ BRANCH NEW ██ -->
+<div class="page" id="p-branch-new">
+  <div class="ph"><div><h1>New Branch</h1></div></div>
+  <div class="card"><div class="cb"><div class="fg fg3">
+    <div class="fd"><label>Branch Name <span class="req">*</span></label><input placeholder="e.g. Kano North"/></div>
+    <div class="fd"><label>Branch Code</label><input placeholder="e.g. KAN-006"/></div>
+    <div class="fd"><label>Country</label><select><option>Nigeria</option><option>Ghana</option><option>Kenya</option><option>Philippines</option></select></div>
+    <div class="fd"><label>Branch Manager</label><input placeholder="Manager name"/></div>
+    <div class="fd"><label>Opening Date</label><input type="date"/></div>
+    <div class="fd"><label>Currency</label><select><option>USD</option><option>NGN</option><option>GHS</option></select></div>
+  </div><div style="margin-top:14px"><button class="btn bp" onclick="toast('Branch created!','success');nav('branches')">Create Branch</button></div></div></div>
+</div>
+
+<!-- ██ INTER-BRANCH ██ -->
+<div class="page" id="p-inter-branch">
+  <div class="ph"><div><h1>Inter-branch Transfers</h1></div></div>
+  <div class="card"><div class="cb"><div class="fg fg3">
+    <div class="fd"><label>From Branch</label><select><option>Lagos Main</option><option>Abuja Central</option></select></div>
+    <div class="fd"><label>To Branch</label><select><option>Accra North</option><option>Nairobi East</option></select></div>
+    <div class="fd"><label>Amount</label><input type="number" placeholder="$0.00"/></div>
+    <div class="fd"><label>Reference</label><input placeholder="Transfer reference"/></div>
+    <div class="fd"><label>Date</label><input type="date"/></div>
+  </div><div style="margin-top:14px"><button class="btn bp" onclick="toast('Transfer created!','success')">Post Transfer</button></div></div></div>
+</div>
+
+<!-- ██ FIELD OFFICERS ██ -->
+<div class="page" id="p-field-officers">
+  <div class="ph"><div><h1>Field Officers</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Add officer form','info')">＋ Add Officer</button></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Officer</th><th>Branch</th><th>Clients</th><th>Portfolio</th><th>PAR 30</th><th>Collections Today</th><th>Sync Status</th></tr></thead>
+    <tbody>
+      <tr><td><strong>James Osei</strong></td><td>Lagos Main</td><td>420</td><td>$620K</td><td>2.3%</td><td>$2,400</td><td><span class="b bs">Synced</span></td></tr>
+      <tr><td><strong>Aisha Bello</strong></td><td>Abuja Central</td><td>380</td><td>$540K</td><td>3.8%</td><td>$1,800</td><td><span class="b bs">Synced</span></td></tr>
+      <tr><td><strong>Chidi Obi</strong></td><td>Lagos Main</td><td>290</td><td>$420K</td><td>1.9%</td><td>$3,100</td><td><span class="b bw2">Offline</span></td></tr>
+      <tr><td><strong>Priya Sharma</strong></td><td>Manila West</td><td>350</td><td>$500K</td><td>4.2%</td><td>$1,500</td><td><span class="b bs">Synced</span></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ FIELD COLLECTIONS ██ -->
+<div class="page" id="p-field-collections">
+  <div class="ph"><div><h1>Field Collections</h1></div></div>
+  <div class="al al-w">📡 Chidi Obi is currently offline. 3 transactions pending sync.</div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Officer</th><th>Client</th><th>Amount</th><th>Time</th><th>Sync Status</th></tr></thead>
+    <tbody>
+      <tr><td>James Osei</td><td>Kofi Mensah</td><td>$160</td><td>09:14</td><td><span class="b bs">Synced</span></td></tr>
+      <tr><td>Chidi Obi</td><td>Amara Diallo</td><td>$450</td><td>10:32</td><td><span class="b bw2">Pending Sync</span></td></tr>
+      <tr><td>Chidi Obi</td><td>Ibrahim Sow</td><td>$200</td><td>11:05</td><td><span class="b bw2">Pending Sync</span></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ OFFLINE SYNC ██ -->
+<div class="page" id="p-offline-sync">
+  <div class="ph"><div><h1>Offline Sync Status</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Sync initiated!','success')">🔄 Sync Now</button></div></div>
+  <div class="sr s3">
+    <div class="sc gg"><div class="sl">Synced Devices</div><div class="sv">3</div></div>
+    <div class="sc oo"><div class="sl">Offline Devices</div><div class="sv">1</div></div>
+    <div class="sc rr"><div class="sl">Pending Transactions</div><div class="sv">3</div></div>
+  </div>
+</div>
+
+<!-- ██ FIELD MAP ██ -->
+<div class="page" id="p-field-map">
+  <div class="ph"><div><h1>Field Map View</h1><p>Real-time field officer locations.</p></div></div>
+  <div class="card"><div class="cb">
+    <div class="fmap">
+      <div style="font-size:3rem;opacity:.1;position:absolute">🌍</div>
+      <div class="fpin" style="top:30%;left:25%" onclick="toast('James Osei – Lagos Main','info')">📍</div>
+      <div class="fpin" style="top:45%;left:38%" onclick="toast('Aisha Bello – Abuja','info')">📍</div>
+      <div class="fpin" style="top:55%;left:30%" onclick="toast('Chidi Obi – Lagos (Offline)','info')">📍</div>
+      <div class="fpin" style="top:35%;left:65%" onclick="toast('Priya Sharma – Manila','info')">📍</div>
+      <div style="position:absolute;bottom:8px;right:10px;font-size:.72rem;color:var(--teal)">📍 Click pins to view officer</div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ██ REPORTS CENTER ██ -->
+<div class="page" id="p-reports">
+  <div class="ph"><div><h1>Reports Center</h1></div></div>
+  <div class="g3">
+    <div class="card" style="cursor:pointer" onclick="nav('rpt-portfolio')"><div class="cb" style="text-align:center;padding:24px"><div style="font-size:2rem;margin-bottom:8px">💼</div><div style="font-weight:700;color:var(--navy)">Portfolio Report</div><div style="font-size:.75rem;color:var(--gray);margin-top:4px">Active loans by product/branch</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="nav('rpt-disbursement')"><div class="cb" style="text-align:center;padding:24px"><div style="font-size:2rem;margin-bottom:8px">💸</div><div style="font-weight:700;color:var(--navy)">Disbursement Report</div><div style="font-size:.75rem;color:var(--gray);margin-top:4px">Loans issued by period/officer</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="nav('rpt-repayment')"><div class="cb" style="text-align:center;padding:24px"><div style="font-size:2rem;margin-bottom:8px">💳</div><div style="font-weight:700;color:var(--navy)">Repayment Report</div><div style="font-size:.75rem;color:var(--gray);margin-top:4px">Collections by date/method</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="nav('rpt-par')"><div class="cb" style="text-align:center;padding:24px"><div style="font-size:2rem;margin-bottom:8px">⚠️</div><div style="font-weight:700;color:var(--navy)">PAR / Aging Report</div><div style="font-size:.75rem;color:var(--gray);margin-top:4px">Delinquency buckets</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="nav('rpt-savings')"><div class="cb" style="text-align:center;padding:24px"><div style="font-size:2rem;margin-bottom:8px">🏦</div><div style="font-weight:700;color:var(--navy)">Savings Report</div><div style="font-size:.75rem;color:var(--gray);margin-top:4px">Deposit balances & maturity</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="nav('rpt-regulatory')"><div class="cb" style="text-align:center;padding:24px"><div style="font-size:2rem;margin-bottom:8px">🏛️</div><div style="font-weight:700;color:var(--navy)">Regulatory Reports</div><div style="font-size:.75rem;color:var(--gray);margin-top:4px">CBN, BOG, BOU auto-generated</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="nav('rpt-branch')"><div class="cb" style="text-align:center;padding:24px"><div style="font-size:2rem;margin-bottom:8px">🏢</div><div style="font-weight:700;color:var(--navy)">Branch Report</div><div style="font-size:.75rem;color:var(--gray);margin-top:4px">Performance by branch</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="nav('rpt-officer')"><div class="cb" style="text-align:center;padding:24px"><div style="font-size:2rem;margin-bottom:8px">🧑‍💼</div><div style="font-weight:700;color:var(--navy)">Officer Report</div><div style="font-size:.75rem;color:var(--gray);margin-top:4px">Productivity per officer</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="nav('rpt-custom')"><div class="cb" style="text-align:center;padding:24px"><div style="font-size:2rem;margin-bottom:8px">🔧</div><div style="font-weight:700;color:var(--navy)">Custom Report</div><div style="font-size:.75rem;color:var(--gray);margin-top:4px">Build your own dimensions</div></div></div>
+  </div>
+</div>
+
+<!-- ██ REPORT PAGES (shared template) ██ -->
+<div class="page" id="p-rpt-portfolio">
+  <div class="ph"><div><h1>Portfolio Report</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Exported!','success')">⬇ Export</button></div></div>
+  <div class="sr s3"><div class="sc bl"><div class="sl">Total Loans</div><div class="sv">8,234</div></div><div class="sc gg"><div class="sl">Outstanding</div><div class="sv">$4.2M</div></div><div class="sc tt"><div class="sl">Avg. Loan Size</div><div class="sv">$510</div></div></div>
+  <div class="card"><div class="tw"><table><thead><tr><th>Product</th><th>Active</th><th>Principal</th><th>Outstanding</th><th>PAR 30</th></tr></thead><tbody>
+    <tr><td>SME Loan</td><td>3,241</td><td>$2.1M</td><td>$1.9M</td><td>2.3%</td></tr>
+    <tr><td>Personal</td><td>2,110</td><td>$840K</td><td>$720K</td><td>5.4%</td></tr>
+    <tr><td>Agricultural</td><td>1,480</td><td>$630K</td><td>$560K</td><td>1.9%</td></tr>
+    <tr><td>Group</td><td>1,403</td><td>$420K</td><td>$380K</td><td>3.5%</td></tr>
+  </tbody></table></div></div>
+</div>
+
+<div class="page" id="p-rpt-disbursement"><div class="ph"><div><h1>Disbursement Report</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Exported!','success')">⬇ Export</button></div></div><div class="sr s3"><div class="sc bl"><div class="sl">Disbursed MTD</div><div class="sv">$320K</div></div><div class="sc gg"><div class="sl">Loans Issued</div><div class="sv">88</div></div><div class="sc tt"><div class="sl">Avg Loan Size</div><div class="sv">$3,636</div></div></div></div>
+<div class="page" id="p-rpt-repayment"><div class="ph"><div><h1>Repayment Report</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Exported!','success')">⬇ Export</button></div></div><div class="sr s3"><div class="sc gg"><div class="sl">Collected MTD</div><div class="sv">$184K</div></div><div class="sc oo"><div class="sl">Expected</div><div class="sv">$191K</div></div><div class="sc tt"><div class="sl">Collection Rate</div><div class="sv">96.2%</div></div></div></div>
+<div class="page" id="p-rpt-par"><div class="ph"><div><h1>PAR / Aging Report</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Exported!','success')">⬇ Export</button></div></div><div class="al al-w">⚠️ Portfolio at Risk (PAR 30) is <strong>3.8%</strong>. Benchmark is 5%.</div><div class="sr s4"><div class="sc oo"><div class="sl">PAR 1–30</div><div class="sv">$84K</div></div><div class="sc rr"><div class="sl">PAR 31–60</div><div class="sv">$63K</div></div><div class="sc rr"><div class="sl">PAR 61–90</div><div class="sv">$42K</div></div><div class="sc rr"><div class="sl">PAR 90+</div><div class="sv">$33K</div></div></div></div>
+<div class="page" id="p-rpt-savings"><div class="ph"><div><h1>Savings Report</h1></div></div><div class="sr s3"><div class="sc tt"><div class="sl">Total Balance</div><div class="sv">$1.9M</div></div><div class="sc gg"><div class="sl">New Accounts MTD</div><div class="sv">124</div></div><div class="sc oo"><div class="sl">Interest Paid MTD</div><div class="sv">$8,200</div></div></div></div>
+<div class="page" id="p-rpt-branch"><div class="ph"><div><h1>Branch Report</h1></div></div><div class="al al-i">Select a branch and period to generate.</div></div>
+<div class="page" id="p-rpt-officer"><div class="ph"><div><h1>Officer Report</h1></div></div><div class="card"><div class="tw"><table><thead><tr><th>Officer</th><th>Clients</th><th>Portfolio</th><th>PAR 30</th><th>Disbursed MTD</th><th>Collected MTD</th><th>Rate</th></tr></thead><tbody><tr><td>James Osei</td><td>420</td><td>$620K</td><td>2.3%</td><td>$84K</td><td>$72K</td><td>97.8%</td></tr><tr><td>Aisha Bello</td><td>380</td><td>$540K</td><td>3.8%</td><td>$62K</td><td>$58K</td><td>95.9%</td></tr></tbody></table></div></div></div>
+
+<div class="page" id="p-rpt-regulatory">
+  <div class="ph"><div><h1>Regulatory Reports</h1></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Report</th><th>Regulator</th><th>Frequency</th><th>Last Submitted</th><th>Next Due</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>Monthly MFB Returns</td><td>CBN (Nigeria)</td><td>Monthly</td><td>Feb 28, 2026</td><td>Mar 31, 2026</td><td><span class="b bw2">Pending</span></td><td><button class="btn btn-xs bp" onclick="toast('Report generated','success')">Generate</button></td></tr>
+      <tr><td>AML Suspicious Activity</td><td>NFIU</td><td>Ad-hoc</td><td>Mar 5, 2026</td><td>On demand</td><td><span class="b bs">Submitted</span></td><td><button class="btn btn-xs bo">Download</button></td></tr>
+      <tr><td>BOG Supervisory Returns</td><td>BOG (Ghana)</td><td>Monthly</td><td>Feb 28, 2026</td><td>Mar 31, 2026</td><td><span class="b bw2">Pending</span></td><td><button class="btn btn-xs bp" onclick="toast('Report generated','success')">Generate</button></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<div class="page" id="p-rpt-custom"><div class="ph"><div><h1>Custom Report Builder</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Report generated','success')">▶ Run</button></div></div><div class="card"><div class="cb"><div class="fg fg3"><div class="fd"><label>Module</label><select><option>Loans</option><option>Savings</option><option>Clients</option></select></div><div class="fd"><label>Group By</label><select><option>Branch</option><option>Product</option><option>Officer</option><option>Month</option></select></div><div class="fd"><label>Date Range</label><select><option>This Month</option><option>Last Month</option><option>YTD</option></select></div></div></div></div></div>
+
+<!-- ██ WORKFLOWS ██ -->
+<div class="page" id="p-workflows">
+  <div class="ph"><div><h1>Workflows</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Workflow builder ready','info')">＋ New Workflow</button></div></div>
+  <div class="g2">
+    <div class="card"><div class="ch"><span class="ct">Loan Approval Flow</span><span class="b bs">Active</span></div><div class="cb">
+      <div class="wfc">
+        <div class="wfn wfs" onclick="toast('Application Submitted','info')">🟢 Application</div><div class="wfa">→</div>
+        <div class="wfn" onclick="toast('KYC Check','info')">🪪 KYC Check</div><div class="wfa">→</div>
+        <div class="wfn" onclick="toast('Credit Score','info')">📊 Credit Score</div><div class="wfa">→</div>
+        <div class="wfn" onclick="toast('Officer Review','info')">👤 Officer Review</div><div class="wfa">→</div>
+        <div class="wfn" onclick="toast('Manager Approval','info')">✅ Approval</div><div class="wfa">→</div>
+        <div class="wfn wfe" onclick="toast('Disbursement','info')">🔴 Disbursement</div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px"><button class="btn btn-sm bo">Edit</button><button class="btn btn-sm bg" onclick="toast('Workflow saved!','success')">Save</button></div>
+    </div></div>
+    <div class="card"><div class="ch"><span class="ct">Client Onboarding Flow</span><span class="b bs">Active</span></div><div class="cb">
+      <div class="wfc">
+        <div class="wfn wfs">🟢 Lead</div><div class="wfa">→</div>
+        <div class="wfn">📋 Data Entry</div><div class="wfa">→</div>
+        <div class="wfn">📁 Doc Upload</div><div class="wfa">→</div>
+        <div class="wfn">🔍 KYC</div><div class="wfa">→</div>
+        <div class="wfn wfe">🔴 Activated</div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ██ CUSTOM FIELDS ██ -->
+<div class="page" id="p-custom-fields">
+  <div class="ph"><div><h1>Custom Fields</h1><p>Add configurable fields to any module — no coding needed.</p></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('New field form','info')">＋ Add Field</button></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Field Name</th><th>Type</th><th>Module</th><th>Required</th><th>Reportable</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr><td>Business Type</td><td>Dropdown</td><td>Client</td><td><span class="b bs">Yes</span></td><td><span class="b bs">Yes</span></td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bo">Edit</button></td></tr>
+      <tr><td>No. of Employees</td><td>Number</td><td>Client</td><td><span class="b bgr">No</span></td><td><span class="b bs">Yes</span></td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bo">Edit</button></td></tr>
+      <tr><td>GPS Location</td><td>Geo-point</td><td>Client</td><td><span class="b bgr">No</span></td><td><span class="b bgr">No</span></td><td><span class="b bw2">Draft</span></td><td><button class="btn btn-xs bo">Edit</button></td></tr>
+      <tr><td>Loan Purpose</td><td>Text Area</td><td>Loan</td><td><span class="b bs">Yes</span></td><td><span class="b bs">Yes</span></td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bo">Edit</button></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ AUTOMATION RULES ██ -->
+<div class="page" id="p-automation-rules">
+  <div class="ph"><div><h1>Automation Rules</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('New rule','info')">＋ New Rule</button></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Rule Name</th><th>Trigger</th><th>Action</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Auto-Reminder – 3 days before due</td><td>3 days before payment</td><td>Send SMS to client</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>Auto-Flag – PAR 30+</td><td>Loan reaches 30 days overdue</td><td>Flag + notify officer</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>Auto-Provision – Month End</td><td>Last day of month</td><td>Run provisioning</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>Auto-Interest Accrual – Daily</td><td>Daily at 00:01</td><td>Post accrual entries</td><td><span class="b bs">Active</span></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ API INTEGRATIONS ██ -->
+<div class="page" id="p-api-integrations">
+  <div class="ph"><div><h1>API Integrations</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Integration wizard','info')">＋ New Integration</button></div></div>
+  <div class="g3">
+    <div class="card"><div class="cb" style="text-align:center;padding:20px"><div style="font-size:1.8rem;margin-bottom:8px">💬</div><div style="font-weight:700">WhatsApp</div><div style="font-size:.75rem;color:var(--gray);margin:4px 0">Client messaging</div><span class="b bs">Connected</span></div></div>
+    <div class="card"><div class="cb" style="text-align:center;padding:20px"><div style="font-size:1.8rem;margin-bottom:8px">📊</div><div style="font-weight:700">Credit Bureau</div><div style="font-size:.75rem;color:var(--gray);margin:4px 0">Credit score pulls</div><span class="b bs">Connected</span></div></div>
+    <div class="card"><div class="cb" style="text-align:center;padding:20px"><div style="font-size:1.8rem;margin-bottom:8px">📱</div><div style="font-weight:700">Mobile Money</div><div style="font-size:.75rem;color:var(--gray);margin:4px 0">M-Pesa, MTN MoMo</div><span class="b bs">Connected</span></div></div>
+    <div class="card"><div class="cb" style="text-align:center;padding:20px"><div style="font-size:1.8rem;margin-bottom:8px">🏛️</div><div style="font-weight:700">Central Bank API</div><div style="font-size:.75rem;color:var(--gray);margin:4px 0">Regulatory reporting</div><span class="b bw2">Pending</span></div></div>
+    <div class="card"><div class="cb" style="text-align:center;padding:20px"><div style="font-size:1.8rem;margin-bottom:8px">☁️</div><div style="font-weight:700">AWS S3</div><div style="font-size:.75rem;color:var(--gray);margin:4px 0">Document storage</div><span class="b bs">Connected</span></div></div>
+    <div class="card"><div class="cb" style="text-align:center;padding:20px"><div style="font-size:1.8rem;margin-bottom:8px">🔌</div><div style="font-weight:700">Custom API</div><div style="font-size:.75rem;color:var(--gray);margin:4px 0">Proprietary systems</div><span class="b bgr">Configure</span></div></div>
+  </div>
+</div>
+
+<!-- ██ WEBHOOKS ██ -->
+<div class="page" id="p-webhooks">
+  <div class="ph"><div><h1>Webhooks</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Webhook added','success')">＋ Add Webhook</button></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Event</th><th>URL</th><th>Method</th><th>Last Triggered</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>loan.disbursed</td><td>https://partner-api.com/webhooks</td><td>POST</td><td>Mar 13, 09:45</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>loan.repayment</td><td>https://partner-api.com/webhooks</td><td>POST</td><td>Mar 13, 09:14</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>client.created</td><td>https://partner-api.com/webhooks</td><td>POST</td><td>Mar 12, 14:22</td><td><span class="b bs">Active</span></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ USERS ██ -->
+<div class="page" id="p-users">
+  <div class="ph"><div><h1>Users</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="openM('m-new-user')">＋ Add User</button></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Branch</th><th>Last Login</th><th>MFA</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Admin User</strong></td><td>admin@instafin.com</td><td><span class="b bi">Admin</span></td><td>All</td><td>Just now</td><td>✅</td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bo">Edit</button></td></tr>
+      <tr><td>James Osei</td><td>james@instafin.com</td><td><span class="b bpu2">Loan Officer</span></td><td>Lagos Main</td><td>2h ago</td><td>✅</td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bo">Edit</button></td></tr>
+      <tr><td>Aisha Bello</td><td>aisha@instafin.com</td><td><span class="b bpu2">Loan Officer</span></td><td>Abuja Central</td><td>1d ago</td><td>✅</td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bo">Edit</button></td></tr>
+      <tr><td>Chidi Obi</td><td>chidi@instafin.com</td><td><span class="b btl">Field Officer</span></td><td>Lagos Main</td><td>3h ago</td><td>❌</td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bo">Edit</button></td></tr>
+      <tr><td>Priya Sharma</td><td>priya@instafin.com</td><td><span class="b bgr">Accountant</span></td><td>Manila West</td><td>5h ago</td><td>✅</td><td><span class="b bs">Active</span></td><td><button class="btn btn-xs bo">Edit</button></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ ROLES ██ -->
+<div class="page" id="p-roles">
+  <div class="ph"><div><h1>Roles & Permissions</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('New role','info')">＋ New Role</button></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Role</th><th>Users</th><th>Module Access</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Administrator</strong></td><td>1</td><td>All Modules</td><td><button class="btn btn-xs bo">Edit</button></td></tr>
+      <tr><td><strong>Branch Manager</strong></td><td>5</td><td>All except System Config</td><td><button class="btn btn-xs bo">Edit</button></td></tr>
+      <tr><td><strong>Loan Officer</strong></td><td>8</td><td>Clients, Loans, Collections, Reports</td><td><button class="btn btn-xs bo">Edit</button></td></tr>
+      <tr><td><strong>Field Officer</strong></td><td>12</td><td>Clients, Repayments, Field Collections</td><td><button class="btn btn-xs bo">Edit</button></td></tr>
+      <tr><td><strong>Cashier / Teller</strong></td><td>6</td><td>Teller, Transactions only</td><td><button class="btn btn-xs bo">Edit</button></td></tr>
+      <tr><td><strong>Accountant</strong></td><td>4</td><td>Accounting, Reports</td><td><button class="btn btn-xs bo">Edit</button></td></tr>
+      <tr><td><strong>Auditor</strong></td><td>2</td><td>Read-only all modules</td><td><button class="btn btn-xs bo">Edit</button></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ SECURITY ██ -->
+<div class="page" id="p-security">
+  <div class="ph"><div><h1>Security & MFA</h1></div></div>
+  <div class="g2">
+    <div class="card"><div class="ch"><span class="ct">🔐 Authentication Settings</span></div><div class="cb">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="tgw"><label class="tg"><input type="checkbox" checked onchange="toast('MFA setting updated','success')"><span class="tgs"></span></label><span class="tg-l">Require MFA for all logins</span></div>
+        <div class="tgw"><label class="tg"><input type="checkbox" checked><span class="tgs"></span></label><span class="tg-l">SMS OTP</span></div>
+        <div class="tgw"><label class="tg"><input type="checkbox" checked><span class="tgs"></span></label><span class="tg-l">Email OTP</span></div>
+        <div class="tgw"><label class="tg"><input type="checkbox"><span class="tgs"></span></label><span class="tg-l">Authenticator App (TOTP)</span></div>
+        <div class="tgw"><label class="tg"><input type="checkbox"><span class="tgs"></span></label><span class="tg-l">Biometric Login</span></div>
+        <div class="tgw"><label class="tg"><input type="checkbox" checked><span class="tgs"></span></label><span class="tg-l">Session Timeout (30 min)</span></div>
+        <div class="tgw"><label class="tg"><input type="checkbox" checked><span class="tgs"></span></label><span class="tg-l">IP Whitelisting</span></div>
+        <div class="tgw"><label class="tg"><input type="checkbox" checked><span class="tgs"></span></label><span class="tg-l">Password Complexity Policy</span></div>
+      </div>
+    </div></div>
+    <div class="card"><div class="ch"><span class="ct">📋 Recent Security Events</span></div><div class="tw"><table>
+      <thead><tr><th>Event</th><th>User</th><th>IP</th><th>Time</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>Login</td><td>admin</td><td>102.89.45.12</td><td>Now</td><td><span class="b bs">OK</span></td></tr>
+        <tr><td>Failed Login</td><td>unknown</td><td>41.58.102.34</td><td>5 min</td><td><span class="b br">Fail</span></td></tr>
+        <tr><td>Password Change</td><td>james</td><td>102.89.45.20</td><td>2h ago</td><td><span class="b bs">OK</span></td></tr>
+        <tr><td>Bulk Export</td><td>priya</td><td>180.212.10.5</td><td>5h ago</td><td><span class="b bw2">Flagged</span></td></tr>
+      </tbody>
+    </table></div></div>
+  </div>
+</div>
+
+<!-- ██ AUDIT LOG ██ -->
+<div class="page" id="p-audit-log">
+  <div class="ph"><div><h1>Audit Log</h1><p>Immutable log of all system actions.</p></div><div class="ph-r"><button class="btn btn-sm bo">⬇ Export</button></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Timestamp</th><th>User</th><th>Action</th><th>Module</th><th>Record ID</th><th>IP Address</th></tr></thead>
+    <tbody>
+      <tr><td>Mar 13, 09:01:23</td><td>admin</td><td>LOGIN</td><td>Auth</td><td>–</td><td>102.89.45.12</td></tr>
+      <tr><td>Mar 13, 09:14:05</td><td>james</td><td>CREATE_REPAYMENT</td><td>Loans</td><td>REC-8821</td><td>102.89.45.20</td></tr>
+      <tr><td>Mar 13, 09:45:12</td><td>chidi</td><td>DISBURSE_LOAN</td><td>Loans</td><td>LN-2891</td><td>102.89.45.30</td></tr>
+      <tr><td>Mar 13, 10:02:44</td><td>james</td><td>CREATE_DEPOSIT</td><td>Savings</td><td>SAV-001001</td><td>102.89.45.20</td></tr>
+      <tr><td>Mar 13, 11:20:18</td><td>priya</td><td>EXPORT_REPORT</td><td>Reports</td><td>RPT-PAR-0313</td><td>180.212.10.5</td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ SYSTEM CONFIG ██ -->
+<div class="page" id="p-system-config">
+  <div class="ph"><div><h1>System Configuration</h1></div><div class="ph-r"><button class="btn btn-sm bg" onclick="toast('Config saved!','success')">💾 Save</button></div></div>
+  <div class="card"><div class="cb"><div class="fg fg3">
+    <div class="fd"><label>Max Loan Amount</label><input type="number" value="50000"/></div>
+    <div class="fd"><label>Max Loan Term (months)</label><input type="number" value="36"/></div>
+    <div class="fd"><label>Default Grace Period (days)</label><input type="number" value="30"/></div>
+    <div class="fd"><label>PAR 30 Alert Threshold (%)</label><input type="number" value="5"/></div>
+    <div class="fd"><label>Close of Business Time</label><input type="time" value="18:00"/></div>
+    <div class="fd"><label>Multi-Currency</label><select><option>Enabled</option><option>Disabled</option></select></div>
+  </div></div></div>
+</div>
+
+<!-- ██ CURRENCIES ██ -->
+<div class="page" id="p-currencies">
+  <div class="ph"><div><h1>Currencies</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Currency added','success')">＋ Add</button></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Code</th><th>Name</th><th>Symbol</th><th>Rate (to USD)</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>USD</td><td>US Dollar</td><td>$</td><td>1.0000</td><td><span class="b bs">Base</span></td></tr>
+      <tr><td>NGN</td><td>Nigerian Naira</td><td>₦</td><td>1580.00</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>GHS</td><td>Ghanaian Cedi</td><td>₵</td><td>15.20</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>KES</td><td>Kenyan Shilling</td><td>KSh</td><td>129.00</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>PHP</td><td>Philippine Peso</td><td>₱</td><td>57.50</td><td><span class="b bs">Active</span></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ HOLIDAYS ██ -->
+<div class="page" id="p-holidays">
+  <div class="ph"><div><h1>Holidays</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Holiday added','success')">＋ Add Holiday</button></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Date</th><th>Holiday Name</th><th>Country</th><th>Affects Payments</th></tr></thead>
+    <tbody>
+      <tr><td>Jan 1, 2026</td><td>New Year's Day</td><td>All</td><td>Yes</td></tr>
+      <tr><td>Apr 3, 2026</td><td>Good Friday</td><td>Nigeria, Ghana</td><td>Yes</td></tr>
+      <tr><td>Oct 1, 2026</td><td>Independence Day</td><td>Nigeria</td><td>Yes</td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ BACKUP ██ -->
+<div class="page" id="p-backup">
+  <div class="ph"><div><h1>Backup & Restore</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Backup started!','success')">💾 Backup Now</button></div></div>
+  <div class="al al-s">✅ Last backup: Mar 13, 2026 at 02:00 AM — Completed. Stored on AWS S3 (eu-west-1).</div>
+  <div class="sr s3">
+    <div class="sc gg"><div class="sl">Last Backup</div><div class="sv">Today</div><div class="ss">02:00 AM</div></div>
+    <div class="sc bl"><div class="sl">Backup Size</div><div class="sv">2.4 GB</div></div>
+    <div class="sc tt"><div class="sl">Retention</div><div class="sv">90 days</div></div>
+  </div>
+</div>
+
+<!-- ██ NOTIFICATIONS ██ -->
+<div class="page" id="p-notifications">
+  <div class="ph"><div><h1>Notifications</h1></div><div class="ph-r"><button class="btn btn-sm bo" onclick="toast('All marked read','success');document.getElementById('nBadge').textContent='0'">✓ Mark All Read</button></div></div>
+  <div class="card"><div class="cb">
+    <div style="display:flex;flex-direction:column">
+      <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)"><div style="width:10px;height:10px;border-radius:50%;background:var(--red);margin-top:5px;flex-shrink:0"></div><div><div style="font-size:.82rem;font-weight:600">PAR Alert: LN-2651 is 62 days overdue</div><div style="font-size:.75rem;color:var(--gray)">Ibrahim Sow · Lagos Main · 2 hours ago</div></div></div>
+      <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)"><div style="width:10px;height:10px;border-radius:50%;background:var(--orange);margin-top:5px;flex-shrink:0"></div><div><div style="font-size:.82rem;font-weight:600">FD Maturity: DEP-774 matures Mar 15</div><div style="font-size:.75rem;color:var(--gray)">Chukwudi Eze · Renewal pending · 3 hours ago</div></div></div>
+      <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)"><div style="width:10px;height:10px;border-radius:50%;background:var(--teal);margin-top:5px;flex-shrink:0"></div><div><div style="font-size:.82rem;font-weight:600">KYC Submitted: CLT-1088 – Yusuf Abubakar</div><div style="font-size:.75rem;color:var(--gray)">Documents awaiting review · 5 hours ago</div></div></div>
+      <div style="display:flex;gap:12px;padding:12px 0"><div style="width:10px;height:10px;border-radius:50%;background:var(--green);margin-top:5px;flex-shrink:0"></div><div><div style="font-size:.82rem;font-weight:600">Loan Disbursed: $5,000 to Amara Diallo</div><div style="font-size:.75rem;color:var(--gray)">LN-2891 · Processed · 1 day ago</div></div></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ██ MESSAGES ██ -->
+<div class="page" id="p-messages">
+  <div class="ph"><div><h1>Messages</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Message sent','success')">＋ New Message</button></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Date</th><th>Recipient</th><th>Channel</th><th>Message Preview</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Mar 13</td><td>Amara Diallo</td><td>SMS</td><td>Your loan of $5,000 has been disbursed…</td><td><span class="b bs">Delivered</span></td></tr>
+      <tr><td>Mar 12</td><td>Ibrahim Sow</td><td>SMS</td><td>Reminder: Your loan LN-2651 is overdue…</td><td><span class="b bs">Delivered</span></td></tr>
+      <tr><td>Mar 11</td><td>Kofi Mensah</td><td>WhatsApp</td><td>Your next payment of $160 is due Apr 5…</td><td><span class="b bs">Delivered</span></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ SMS TEMPLATES ██ -->
+<div class="page" id="p-sms-templates">
+  <div class="ph"><div><h1>SMS Templates</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Template saved','success')">＋ New Template</button></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Template Name</th><th>Trigger</th><th>Channel</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Loan Disbursement Notification</td><td>On Disbursement</td><td>SMS + Email</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>Repayment Reminder (3 days before)</td><td>3 days before due</td><td>SMS</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>Overdue Alert</td><td>Day 1 overdue</td><td>SMS + WhatsApp</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>FD Maturity Notification</td><td>7 days before maturity</td><td>SMS</td><td><span class="b bs">Active</span></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ BULK SMS ██ -->
+<div class="page" id="p-sms-blast">
+  <div class="ph"><div><h1>Bulk SMS</h1></div></div>
+  <div class="card"><div class="cb">
+    <div class="fg fg2">
+      <div class="fd"><label>Target Segment</label><select><option>All Active Clients</option><option>Overdue Clients Only</option><option>By Branch</option></select></div>
+      <div class="fd"><label>Channel</label><select><option>SMS</option><option>Email</option><option>WhatsApp</option></select></div>
+    </div>
+    <div class="fd" style="margin-top:14px"><label>Message</label><textarea placeholder="Type your message…" style="min-height:100px"></textarea></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+      <span style="font-size:.75rem;color:var(--gray)">Estimated recipients: <strong>11,204</strong></span>
+      <button class="btn bp" onclick="toast('Bulk SMS scheduled!','success')">📣 Send Blast</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- ██ EMAIL LOGS ██ -->
+<div class="page" id="p-email-logs">
+  <div class="ph"><div><h1>Email Logs</h1></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Date</th><th>To</th><th>Subject</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Mar 13</td><td>amara@example.com</td><td>Loan Disbursement Confirmation</td><td><span class="b bs">Delivered</span></td></tr>
+      <tr><td>Mar 12</td><td>ibrahim@example.com</td><td>Overdue Loan Notice</td><td><span class="b bs">Delivered</span></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ FEE CONFIGS ██ -->
+<div class="page" id="p-fee-configs">
+  <div class="ph"><div><h1>Fees & Charges Config</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Fee added','success')">＋ Add Fee</button></div></div>
+  <div class="card"><div class="tw"><table>
+    <thead><tr><th>Fee Name</th><th>Applied To</th><th>Rate / Amount</th><th>Trigger</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Origination Fee</td><td>All Loans</td><td>2% of principal</td><td>On Disbursement</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>Late Payment Penalty</td><td>All Loans</td><td>5% of overdue</td><td>After grace period</td><td><span class="b bs">Active</span></td></tr>
+      <tr><td>Account Maintenance</td><td>Savings</td><td>$1.00/month</td><td>Monthly</td><td><span class="b bs">Active</span></td></tr>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ██ INTEREST RATES ██ -->
+<div class="page" id="p-interest-rates">
+  <div class="ph"><div><h1>Interest Rate Config</h1></div></div>
+  <div class="card"><div class="cb"><div class="fg fg3">
+    <div class="fd"><label>Product</label><select><option>SME Loan</option><option>Personal Loan</option><option>Agricultural</option></select></div>
+    <div class="fd"><label>Rate (%)</label><input type="number" value="18"/></div>
+    <div class="fd"><label>Method</label><select><option>Declining Balance</option><option>Flat Rate</option></select></div>
+    <div class="fd"><label>Compounding</label><select><option>Monthly</option><option>Daily</option></select></div>
+    <div class="fd"><label>Effective Date</label><input type="date"/></div>
+  </div><div style="margin-top:14px"><button class="btn bp" onclick="toast('Rate saved!','success')">Save Config</button></div></div></div>
+</div>
+
+<!-- ██ PENALTY CONFIG ██ -->
+<div class="page" id="p-penalty-config">
+  <div class="ph"><div><h1>Penalty Configuration</h1></div></div>
+  <div class="card"><div class="cb"><div class="fg fg3">
+    <div class="fd"><label>Penalty Type</label><select><option>% of Overdue</option><option>Flat Amount</option><option>% of Principal</option></select></div>
+    <div class="fd"><label>Penalty Rate</label><input type="number" value="5"/></div>
+    <div class="fd"><label>Grace Period (days)</label><input type="number" value="3"/></div>
+  </div><div style="margin-top:14px"><button class="btn bp" onclick="toast('Penalty config saved!','success')">Save</button></div></div></div>
+</div>
+
+<!-- ██ HELP ██ -->
+<div class="page" id="p-help">
+  <div class="ph"><div><h1>Help Center</h1></div></div>
+  <div class="g3">
+    <div class="card" style="cursor:pointer" onclick="toast('Opening Instafin Basics…','info')"><div class="cb" style="text-align:center;padding:24px"><div style="font-size:2rem;margin-bottom:8px">📚</div><div style="font-weight:700;color:var(--navy)">Instafin Basics</div><div style="font-size:.75rem;color:var(--gray);margin-top:4px">Core system training</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="toast('Opening Loan guide…','info')"><div class="cb" style="text-align:center;padding:24px"><div style="font-size:2rem;margin-bottom:8px">💼</div><div style="font-weight:700;color:var(--navy)">Loan Management</div><div style="font-size:.75rem;color:var(--gray);margin-top:4px">Full loan lifecycle training</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="toast('Opening Accounting guide…','info')"><div class="cb" style="text-align:center;padding:24px"><div style="font-size:2rem;margin-bottom:8px">📊</div><div style="font-weight:700;color:var(--navy)">Accounting Module</div><div style="font-size:.75rem;color:var(--gray);margin-top:4px">GL, journals, statements</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="toast('Opening Delinquency guide…','info')"><div class="cb" style="text-align:center;padding:24px"><div style="font-size:2rem;margin-bottom:8px">⚠️</div><div style="font-weight:700;color:var(--navy)">Delinquency Management</div><div style="font-size:.75rem;color:var(--gray);margin-top:4px">Collections & recovery</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="toast('Opening Reporting guide…','info')"><div class="cb" style="text-align:center;padding:24px"><div style="font-size:2rem;margin-bottom:8px">📈</div><div style="font-weight:700;color:var(--navy)">Reporting & Analytics</div><div style="font-size:.75rem;color:var(--gray);margin-top:4px">Custom & regulatory reports</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="toast('Opening Field Officer guide…','info')"><div class="cb" style="text-align:center;padding:24px"><div style="font-size:2rem;margin-bottom:8px">🧑‍💼</div><div style="font-weight:700;color:var(--navy)">Field Officer App</div><div style="font-size:.75rem;color:var(--gray);margin-top:4px">Offline collections guide</div></div></div>
+  </div>
+</div>
+
+<!-- ██ SETTINGS ██ -->
+<div class="page" id="p-settings">
+  <div class="ph"><div><h1>Settings</h1></div><div class="ph-r"><button class="btn btn-sm bg" onclick="toast('Settings saved!','success')">💾 Save Changes</button></div></div>
+  <div class="g2">
+    <div class="card"><div class="ch"><span class="ct">🏢 Institution</span></div><div class="cb"><div class="fg fg2">
+      <div class="fd"><label>Institution Name</label><input value="Instafin MFB Ltd."/></div>
+      <div class="fd"><label>License No.</label><input value="CBN/MFB/042/2019"/></div>
+      <div class="fd"><label>Country</label><select><option>Nigeria</option><option>Ghana</option><option>Kenya</option><option>Philippines</option></select></div>
+      <div class="fd"><label>Base Currency</label><select><option>USD ($)</option><option>NGN (₦)</option><option>GHS (₵)</option></select></div>
+      <div class="fd"><label>Time Zone</label><select><option>Africa/Lagos (WAT)</option><option>Africa/Nairobi (EAT)</option><option>Asia/Manila (PHT)</option></select></div>
+      <div class="fd"><label>Fiscal Year Start</label><select><option>January</option><option>April</option><option>July</option></select></div>
+    </div></div></div>
+    <div class="card"><div class="ch"><span class="ct">🌐 API & Cloud</span></div><div class="cb">
+      <div class="fg">
+        <div class="fd"><label>API Base URL</label><input value="https://api.instafin.com/v1"/></div>
+        <div class="fd"><label>API Key</label><input value="sk_live_••••••••••••••••••"/></div>
+        <div class="fd"><label>Cloud Region</label><select><option>AWS eu-west-1 (Ireland)</option><option>AWS ap-southeast-1 (Singapore)</option></select></div>
+      </div>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+        <div class="tgw"><label class="tg"><input type="checkbox" checked><span class="tgs"></span></label><span class="tg-l">REST API Enabled</span></div>
+        <div class="tgw"><label class="tg"><input type="checkbox" checked><span class="tgs"></span></label><span class="tg-l">Webhook Events</span></div>
+        <div class="tgw"><label class="tg"><input type="checkbox"><span class="tgs"></span></label><span class="tg-l">Offline Mode (Field App)</span></div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ██ STUB PAGES ██ -->
+<div class="page" id="p-blacklist"><div class="ph"><div><h1>Blacklist</h1></div></div><div class="card"><div class="tw"><table><thead><tr><th>Client ID</th><th>Name</th><th>Reason</th><th>Date Added</th><th>Actions</th></tr></thead><tbody><tr><td>CLT-0441</td><td>John Doe</td><td>Fraudulent documents</td><td>Jan 15, 2026</td><td><button class="btn btn-xs bg" onclick="toast('Removed from blacklist','success')">Remove</button></td></tr><tr><td>CLT-0582</td><td>Jane Smith</td><td>Repeated default</td><td>Feb 3, 2026</td><td><button class="btn btn-xs bg" onclick="toast('Removed from blacklist','success')">Remove</button></td></tr></tbody></table></div></div></div>
+<div class="page" id="p-client-import"><div class="ph"><div><h1>Import Clients</h1></div></div><div class="card"><div class="cb"><div class="al al-i">📥 Upload a CSV with columns: First Name, Last Name, Phone, Email, ID Type, ID Number, Branch.</div><div style="border:2px dashed var(--border);border-radius:8px;padding:40px;text-align:center;background:#f8fafc"><div style="font-size:2.5rem;margin-bottom:8px">📂</div><div style="font-weight:600;color:var(--navy);margin-bottom:12px">Drag & Drop CSV / Excel file here</div><button class="btn bp" onclick="toast('File upload dialog','info')">Browse Files</button></div><div style="margin-top:14px;display:flex;gap:8px"><button class="btn btn-sm bo">⬇ Download Template</button><button class="btn btn-sm bp" onclick="toast('Import started…','success')">Start Import</button></div></div></div></div>
+<div class="page" id="p-loan-pending"><div class="ph"><div><h1>Pending Approval</h1></div></div><div class="card"><div class="tw"><table><thead><tr><th>App ID</th><th>Client</th><th>Amount</th><th>Product</th><th>Officer</th><th>Submitted</th><th>Actions</th></tr></thead><tbody><tr><td>APP-007</td><td>Kofi Asante</td><td>$3,500</td><td>SME Loan</td><td>James Osei</td><td>Mar 13</td><td><button class="btn btn-xs bg" onclick="toast('Loan approved!','success')">Approve</button> <button class="btn btn-xs bd" onclick="toast('Loan rejected','error')">Reject</button></td></tr><tr><td>APP-008</td><td>Yusuf Abubakar</td><td>$1,200</td><td>Personal</td><td>Aisha Bello</td><td>Mar 12</td><td><button class="btn btn-xs bg" onclick="toast('Loan approved!','success')">Approve</button> <button class="btn btn-xs bd" onclick="toast('Loan rejected','error')">Reject</button></td></tr></tbody></table></div></div></div>
+<div class="page" id="p-loan-disbursements"><div class="ph"><div><h1>Disbursements</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('New disbursement','info')">＋ New</button></div></div><div class="card"><div class="tw"><table><thead><tr><th>Disb. ID</th><th>Date</th><th>Client</th><th>Loan ID</th><th>Amount</th><th>Method</th><th>Officer</th><th>Status</th></tr></thead><tbody><tr><td>DSB-0441</td><td>Mar 13</td><td>Amara Diallo</td><td>LN-2891</td><td>$5,000</td><td>Bank Transfer</td><td>James Osei</td><td><span class="b bs">Completed</span></td></tr><tr><td>DSB-0440</td><td>Mar 12</td><td>Chukwudi Eze</td><td>LN-2851</td><td>$3,400</td><td>Mobile Money</td><td>Aisha Bello</td><td><span class="b bs">Completed</span></td></tr></tbody></table></div></div></div>
+<div class="page" id="p-loan-restructure"><div class="ph"><div><h1>Loan Restructuring</h1></div></div><div class="al al-w">⚠️ Loan restructuring affects PAR and accounting. Requires manager approval.</div><div class="card"><div class="cb"><div class="fg fg3"><div class="fd"><label>Loan ID</label><input placeholder="LN-XXXX"/></div><div class="fd"><label>Reason</label><select><option>Client Hardship</option><option>Business Failure</option><option>Natural Disaster</option></select></div><div class="fd"><label>New Term (months)</label><input type="number" placeholder="12"/></div><div class="fd"><label>New Rate (%)</label><input type="number" placeholder="18"/></div><div class="fd"><label>Restructure Date</label><input type="date"/></div></div><div style="margin-top:10px"><button class="btn bp" onclick="toast('Restructure submitted','success')">Submit for Approval</button></div></div></div></div>
+<div class="page" id="p-loan-writeoff"><div class="ph"><div><h1>Write-offs</h1></div></div><div class="card"><div class="tw"><table><thead><tr><th>Loan ID</th><th>Client</th><th>Amount</th><th>PAR Days</th><th>Write-off Date</th><th>Approved By</th></tr></thead><tbody><tr><td>LN-2110</td><td>Old Client A</td><td>$2,400</td><td>180+</td><td>Jan 31, 2026</td><td>Admin</td></tr><tr><td>LN-2050</td><td>Old Client B</td><td>$1,800</td><td>180+</td><td>Feb 28, 2026</td><td>Admin</td></tr></tbody></table></div></div></div>
+<div class="page" id="p-delinquency"><div class="ph"><div><h1>Delinquency Management</h1></div></div><div class="sr s4"><div class="sc oo"><div class="sl">1–30 Days</div><div class="sv">$84K</div><div class="ss">2.0% of portfolio</div></div><div class="sc rr"><div class="sl">31–60 Days</div><div class="sv">$63K</div><div class="ss">1.5%</div></div><div class="sc rr"><div class="sl">61–90 Days</div><div class="sv">$42K</div><div class="ss">1.0%</div></div><div class="sc rr"><div class="sl">90+ Days</div><div class="sv">$33K</div><div class="ss">0.7%</div></div></div></div>
+<div class="page" id="p-follow-up"><div class="ph"><div><h1>Follow-up Tasks</h1></div><div class="ph-r"><button class="btn btn-sm bp" onclick="toast('Task added','success')">＋ Add Task</button></div></div><div class="card"><div class="tw"><table><thead><tr><th>Client</th><th>Loan ID</th><th>Due</th><th>Type</th><th>Assigned To</th><th>Priority</th><th>Status</th></tr></thead><tbody><tr><td>Ibrahim Sow</td><td>LN-2651</td><td>Mar 13</td><td>Phone Call</td><td>James Osei</td><td><span class="b br">Critical</span></td><td><span class="b bw2">Pending</span></td></tr><tr><td>Kofi Asante</td><td>LN-2145</td><td>Mar 14</td><td>Field Visit</td><td>Chidi Obi</td><td><span class="b br">High</span></td><td><span class="b bi">Scheduled</span></td></tr></tbody></table></div></div></div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ████ MODALS ████ -->
+
+<!-- Quick Action -->
+<div class="ov hidden" id="m-quick" onclick="closeOv(event,'m-quick')">
+  <div class="md md-sm">
+    <div class="mh"><h3>⚡ Quick Actions</h3><button class="mc" onclick="closeM('m-quick')">×</button></div>
+    <div class="mb">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <button class="btn bp" style="height:75px;flex-direction:column;gap:5px;font-size:.82rem" onclick="closeM('m-quick');nav('client-new')">👤<br/>New Client</button>
+        <button class="btn bg" style="height:75px;flex-direction:column;gap:5px;font-size:.82rem" onclick="closeM('m-quick');nav('loan-new')">💼<br/>New Loan</button>
+        <button class="btn bt" style="height:75px;flex-direction:column;gap:5px;font-size:.82rem" onclick="closeM('m-quick');openM('m-repayment')">💰<br/>Record Payment</button>
+        <button class="btn bw" style="height:75px;flex-direction:column;gap:5px;font-size:.82rem" onclick="closeM('m-quick');nav('savings-new')">🏦<br/>New Savings</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loan App Review Modal -->
+<div class="ov hidden" id="m-loan-app" onclick="closeOv(event,'m-loan-app')">
+  <div class="md md-lg">
+    <div class="mh"><h3>📋 Loan Application Review – APP-001</h3><button class="mc" onclick="closeM('m-loan-app')">×</button></div>
+    <div class="mb">
+      <div class="al al-i">📋 Review the application details carefully before making a decision.</div>
+      <div class="ip" style="margin-bottom:16px">
+        <div class="ipi"><div class="il">Client</div><div class="iv">Amara Diallo</div></div>
+        <div class="ipi"><div class="il">Product</div><div class="iv">SME Business Loan</div></div>
+        <div class="ipi"><div class="il">Amount</div><div class="iv">$5,000</div></div>
+        <div class="ipi"><div class="il">Term</div><div class="iv">12 months</div></div>
+        <div class="ipi"><div class="il">Credit Score</div><div class="iv" style="color:var(--green)">720 / 850</div></div>
+        <div class="ipi"><div class="il">DTI Ratio</div><div class="iv" style="color:var(--green)">28%</div></div>
+        <div class="ipi"><div class="il">KYC Status</div><div class="iv"><span class="b bs">Verified</span></div></div>
+        <div class="ipi"><div class="il">Risk Score</div><div class="iv" style="color:var(--green)">Low (18)</div></div>
+      </div>
+      <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:10px">Repayment Schedule Preview</div>
+      <div class="tw"><table>
+        <thead><tr><th>#</th><th>Due Date</th><th>Principal</th><th>Interest</th><th>Total</th><th>Balance</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Apr 1, 2026</td><td>$375</td><td>$75</td><td>$450</td><td>$4,625</td></tr>
+          <tr><td>2</td><td>May 1, 2026</td><td>$375</td><td>$69</td><td>$444</td><td>$4,250</td></tr>
+          <tr><td colspan="5" style="text-align:center;color:var(--gray);font-style:italic">… 10 more instalments</td><td></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeM('m-loan-app')">Close</button>
+      <button class="btn bd" onclick="toast('Application rejected','error');closeM('m-loan-app')">Reject</button>
+      <button class="btn bg" onclick="toast('Application approved!','success');closeM('m-loan-app')">✓ Approve Loan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Loan Detail Modal -->
+<div class="ov hidden" id="m-loan-detail" onclick="closeOv(event,'m-loan-detail')">
+  <div class="md md-lg">
+    <div class="mh"><h3>💼 Loan Account – LN-2891</h3><button class="mc" onclick="closeM('m-loan-detail')">×</button></div>
+    <div class="mb">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab(this,'ldt')">Overview</button>
+        <button class="tab" onclick="switchTab(this,'ldt')">Schedule</button>
+        <button class="tab" onclick="switchTab(this,'ldt')">Transactions</button>
+        <button class="tab" onclick="switchTab(this,'ldt')">Documents</button>
+      </div>
+      <div class="ip">
+        <div class="ipi"><div class="il">Client</div><div class="iv">Amara Diallo</div></div>
+        <div class="ipi"><div class="il">Product</div><div class="iv">SME Business Loan</div></div>
+        <div class="ipi"><div class="il">Principal</div><div class="iv">$5,000</div></div>
+        <div class="ipi"><div class="il">Outstanding</div><div class="iv">$4,200</div></div>
+        <div class="ipi"><div class="il">Interest Rate</div><div class="iv">18% p.a.</div></div>
+        <div class="ipi"><div class="il">Next Payment</div><div class="iv">Apr 1, 2026 · $444</div></div>
+        <div class="ipi"><div class="il">Disbursed</div><div class="iv">Mar 1, 2026</div></div>
+        <div class="ipi"><div class="il">Status</div><div class="iv"><span class="b bs">Current</span></div></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeM('m-loan-detail')">Close</button>
+      <button class="btn bt" onclick="toast('Collecting payment…','info');closeM('m-loan-detail')">Collect Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- Record Repayment Modal -->
+<div class="ov hidden" id
+"/></div>
+        <div class="fd"><label>Max Term (months)</label><input type="number" value="36"/></div>
+        <div class="fd"><label>Grace Period (days)</label><input type="number" value="30"/></div>
+        <div class="fd"><label>Origination Fee (%)</label><input type="number" value="2"/></div>
+        <div class="fd"><label>Late Penalty (%)</label><input type="number" value="5"/></div>
+        <div class="fd"><label>Repayment Frequency</label><select><option>Monthly</option><option>Bi-Weekly</option><option>Weekly</option></select></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeM('m-new-product')">Cancel</button>
+      <button class="btn bp" onclick="toast('Product created!','success');closeM('m-new-product')">Create Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- New User Modal -->
+<div class="ov hidden" id="m-new-user" onclick="closeOv(event,'m-new-user')">
+  <div class="md">
+    <div class="mh"><h3>👤 Add New User</h3><button class="mc" onclick="closeM('m-new-user')">×</button></div>
+    <div class="mb">
+      <div class="fg fg2">
+        <div class="fd"><label>Full Name <span class="req">*</span></label><input placeholder="Full name"/></div>
+        <div class="fd"><label>Email <span class="req">*</span></label><input type="email" placeholder="email@instafin.com"/></div>
+        <div class="fd"><label>Role <span class="req">*</span></label>
+          <select>
+            <option>Administrator</option><option>Branch Manager</option><option>Loan Officer</option>
+            <option>Field Officer</option><option>Cashier / Teller</option><option>Accountant</option><option>Auditor</option>
+          </select>
+        </div>
+        <div class="fd"><label>Branch <span class="req">*</span></label>
+          <select><option>All Branches</option><option>Lagos Main</option><option>Abuja Central</option><option>Accra North</option><option>Nairobi East</option><option>Manila West</option></select>
+        </div>
+        <div class="fd"><label>Temporary Password</label><input type="password" placeholder="Temp password"/></div>
+        <div class="fd"><label>Phone</label><input placeholder="+234…"/></div>
+      </div>
+      <div class="tgw" style="margin-top:12px">
+        <label class="tg"><input type="checkbox" checked><span class="tgs"></span></label>
+        <span class="tg-l">Require MFA on first login</span>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeM('m-new-user')">Cancel</button>
+      <button class="btn bp" onclick="toast('User created!','success');closeM('m-new-user')">Create User</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toasts"></div>
+
+<!-- ████ JAVASCRIPT ████ -->
+<script>
+// ── PAGE MAP ──
+const pageMap = {
+  'dashboard':'p-dashboard','my-tasks':'p-my-tasks',
+  'clients':'p-clients','client-new':'p-client-new','groups':'p-groups','group-new':'p-group-new',
+  'kyc':'p-kyc','blacklist':'p-blacklist','client-import':'p-client-import',
+  'loan-apps':'p-loan-apps','loan-new':'p-loan-new','loan-accounts':'p-loan-accounts',
+  'loan-pending':'p-loan-pending','loan-disbursements':'p-loan-disbursements',
+  'loan-repayments':'p-loan-repayments','loan-schedule':'p-loan-schedule',
+  'loan-restructure':'p-loan-restructure','loan-writeoff':'p-loan-writeoff',
+  'loan-products':'p-loan-products','loan-calc':'p-loan-calc',
+  'collections':'p-collections','par-report':'p-par-report',
+  'delinquency':'p-delinquency','follow-up':'p-follow-up',
+  'savings':'p-savings','savings-new':'p-savings-new','savings-txn':'p-savings-txn',
+  'fixed-deposits':'p-fixed-deposits','fd-new':'p-fd-new','fd-maturity':'p-fd-maturity',
+  'savings-products':'p-savings-products',
+  'teller':'p-teller','cash-in':'p-cash-in','cash-out':'p-cash-out',
+  'vault':'p-vault','cash-transfer':'p-cash-transfer','teller-cod':'p-teller-cod',
+  'gl':'p-gl','journals':'p-journals','trial-balance':'p-trial-balance',
+  'income-stmt':'p-income-stmt','balance-sheet':'p-balance-sheet',
+  'cashflow':'p-cashflow','reconciliation':'p-reconciliation',
+  'provisioning':'p-provisioning','fee-income':'p-fee-income','interest-accrual':'p-interest-accrual',
+  'branches':'p-branches','branch-perf':'p-branch-perf','branch-new':'p-branch-new',
+  'inter-branch':'p-inter-branch',
+  'field-officers':'p-field-officers','field-collections':'p-field-collections',
+  'offline-sync':'p-offline-sync','field-map':'p-field-map',
+  'reports':'p-reports','rpt-portfolio':'p-rpt-portfolio','rpt-disbursement':'p-rpt-disbursement',
+  'rpt-repayment':'p-rpt-repayment','rpt-par':'p-rpt-par','rpt-savings':'p-rpt-savings',
+  'rpt-branch':'p-rpt-branch','rpt-officer':'p-rpt-officer',
+  'rpt-regulatory':'p-rpt-regulatory','rpt-custom':'p-rpt-custom',
+  'workflows':'p-workflows','custom-fields':'p-custom-fields',
+  'automation-rules':'p-automation-rules','api-integrations':'p-api-integrations','webhooks':'p-webhooks',
+  'users':'p-users','roles':'p-roles','security':'p-security','audit-log':'p-audit-log',
+  'system-config':'p-system-config','currencies':'p-currencies','holidays':'p-holidays',
+  'backup':'p-backup','help':'p-help','settings':'p-settings',
+  'messages':'p-messages','sms-templates':'p-sms-templates','sms-blast':'p-sms-blast',
+  'notifications':'p-notifications','email-logs':'p-email-logs',
+  'fee-configs':'p-fee-configs','interest-rates':'p-interest-rates','penalty-config':'p-penalty-config'
+};
+
+// ── LOGIN ──
+function goMFA(){
+  var u=document.getElementById('l_user').value;
+  var p=document.getElementById('l_pass').value;
+  if(!u||!p){alert('Please enter username and password.');return;}
+  document.getElementById('step1').classList.add('hidden');
+  document.getElementById('step2').classList.remove('hidden');
+}
+
+function doLogin(){
+  var code=document.getElementById('l_mfa').value;
+  if(code.length<1){alert('Please enter the MFA code.');return;}
+  var role=document.getElementById('l_role').value;
+  var email=document.getElementById('l_user').value;
+  var name=email.split('@')[0].replace(/[._]/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});
+  document.getElementById('topName').textContent=name;
+  document.getElementById('topRole').textContent=role;
+  document.getElementById('topAv').textContent=name.charAt(0).toUpperCase();
+  document.getElementById('loginWrap').style.display='none';
+  document.getElementById('app').style.display='block';
+  toast('Welcome back, '+name+'! 👋','success');
+}
+
+function doLogout(){
+  if(confirm('Are you sure you want to log out?')){
+    document.getElementById('app').style.display='none';
+    document.getElementById('loginWrap').style.display='flex';
+    document.getElementById('step1').classList.remove('hidden');
+    document.getElementById('step2').classList.add('hidden');
+    document.getElementById('l_mfa').value='';
+  }
+}
+
+// ── NAVIGATION ──
+function nav(pageId, el){
+  // Hide all pages
+  var pages=document.querySelectorAll('.page');
+  for(var i=0;i<pages.length;i++) pages[i].classList.remove('active');
+
+  // Show target page
+  var pid=pageMap[pageId];
+  if(pid){
+    var target=document.getElementById(pid);
+    if(target) target.classList.add('active');
+  }
+
+  // Update sidebar active state
+  var items=document.querySelectorAll('.sb-i');
+  for(var j=0;j<items.length;j++) items[j].classList.remove('active');
+  if(el) el.classList.add('active');
+  else{
+    // Find matching sidebar item by onclick text
+    for(var k=0;k<items.length;k++){
+      var oc=items[k].getAttribute('onclick')||'';
+      if(oc.indexOf("'"+pageId+"'")>-1){
+        items[k].classList.add('active');
+        break;
+      }
+    }
+  }
+
+  // Scroll to top
+  window.scrollTo(0,0);
+}
+
+// ── TABS ──
+function switchTab(btn, group){
+  // Find all tab buttons in the same container
+  var container=btn.closest('.tabs');
+  if(!container) return;
+  var tabs=container.querySelectorAll('.tab');
+  for(var i=0;i<tabs.length;i++) tabs[i].classList.remove('active');
+  btn.classList.add('active');
+}
+
+// ── MODALS ──
+function openM(id){
+  var m=document.getElementById(id);
+  if(m) m.classList.remove('hidden');
+}
+function closeM(id){
+  var m=document.getElementById(id);
+  if(m) m.classList.add('hidden');
+}
+function closeOv(event,id){
+  if(event.target.classList.contains('ov')) closeM(id);
+}
+
+// ── TOAST ──
+function toast(msg, type){
+  type=type||'info';
+  var container=document.getElementById('toasts');
+  var t=document.createElement('div');
+  var icons={success:'✅',error:'❌',info:'ℹ️',warning:'⚠️'};
+  var cls={success:'tst',error:'te',info:'ti',warning:'tw2'};
+  t.className='toast '+(cls[type]||'ti');
+  t.innerHTML='<span>'+(icons[type]||'ℹ️')+'</span> '+msg;
+  container.appendChild(t);
+  setTimeout(function(){
+    t.style.opacity='0';
+    t.style.transition='opacity 0.4s';
+    setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},400);
+  },3000);
+}
+
+// ── LOAN CALCULATOR ──
+function calcLoan(){
+  var amt=parseFloat(document.getElementById('ca').value)||0;
+  var rate=parseFloat(document.getElementById('cr2').value)||0;
+  var term=parseInt(document.getElementById('ct').value)||1;
+  var method=document.getElementById('cm').value;
+  var fee=parseFloat(document.getElementById('cf2').value)||0;
+
+  var monthly=0, totalInt=0;
+  var mRate=rate/100/12;
+
+  if(method==='flat'){
+    totalInt=amt*(rate/100)*(term/12);
+    monthly=(amt+totalInt)/term;
+  } else {
+    if(mRate===0){
+      monthly=amt/term;
+      totalInt=0;
+    } else {
+      monthly=amt*(mRate*Math.pow(1+mRate,term))/(Math.pow(1+mRate,term)-1);
+      totalInt=(monthly*term)-amt;
+    }
+  }
+
+  var origFee=amt*(fee/100);
+  var total=amt+totalInt+origFee;
+
+  document.getElementById('c_m').textContent='$'+monthly.toFixed(2);
+  document.getElementById('c_i').textContent='$'+totalInt.toFixed(2);
+  document.getElementById('c_f').textContent='$'+origFee.toFixed(2);
+  document.getElementById('c_t').textContent='$'+total.toFixed(2);
+}
+
+// ── KEYBOARD ESC ──
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    var ovs=document.querySelectorAll('.ov:not(.hidden)');
+    for(var i=0;i<ovs.length;i++) ovs[i].classList.add('hidden');
+  }
+});
+
+// ── ENTER KEY ON LOGIN ──
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'){
+    var s1=document.getElementById('step1');
+    var s2=document.getElementById('step2');
+    if(s1&&!s1.classList.contains('hidden')) goMFA();
+    else if(s2&&!s2.classList.contains('hidden')) doLogin();
+  }
+});
+
+// ── INIT CALC ──
+window.addEventListener('load',function(){
+  calcLoan();
+});
+</script>
+
+</body>
+</html>
